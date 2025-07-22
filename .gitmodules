@@ -1,0 +1,6 @@
+[submodule "cmocka"]
+	path = cmocka
+	url = https://gitlab.com/cmocka/cmocka.git
+[submodule "gcc_graph_tool"]
+	path = gcc_graph_tool
+	url = https://github.com/leonmariotto/gcc_graph_tool.git
