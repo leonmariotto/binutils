@@ -27,7 +27,7 @@ Assembly, preprocessing, object code.
 ### Callgraphs
 
 The submodule gcc_graph_tool is used to produce a simple callgraph from gcc output.</br>
-This could be extended with stack usage for each function</br>.
+This could be extended with stack usage for each function.</br>
 Screenshot of callgraph :
 <img width="1105" height="685" alt="Screenshot from 2025-07-27 19-53-32" src="https://github.com/user-attachments/assets/42a33d9f-7bdc-4522-a5c2-e08d34eaa711" />
 
