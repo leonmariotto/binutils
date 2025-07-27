@@ -1,51 +1,46 @@
-# CTools
+# binutils
 
 ## Whatsup
 
-This repository is intended to collect tools for building, analyze
-and instrument source code in C/C++.
 Also it may include other things : documentation generation,
-test framework, ...
+test framework, ... <\br>
+There is some submodule in there, so run:
+```
+git submodule update --init
+```
+When cloning repository.
+
+There is some dependency :
+    - uv
+    - cppcheck
+    - graphviz
+    - gcovr
 
 ## Building
 
 Assembly, preprocessing, object code.
 
-## Coverage
-
-Makefile use $(COVERAGE_FLAG) for compiling.
-Linking stage need to include -lcov
-
-TODO: make a rule to produce html output
-
-## Profiling
-
-Makefile use $(FPROFILE_FLAG)
-
-TODO: make a rule to produce output
-
-## Callgraphs
-
-Makefile use $(FANALYZER_FLAG) which create .dot along with object.
-The .dot is then transformed with dot utility int a dedicated rule.
+### Callgraphs
 
 The submodule gcc_graph_tool is used to produce a simple callgraph from gcc output.
 This could be extended with stack usage for each function.
 
 ## Static Analysis
-## MISRA checker
 
-Need to install cppcheck.
-The MISRA checker is a plugin of cppcheck. Configurations files is located under misra/ folder.
+### MISRA checker
+
+The MISRA checker is a plugin of cppcheck. Configurations files is located under misra/ folder. <\br>
 The misra Makefile rules build a report with single line per warning (can be used to
 easily check if there is more error in CI and reject PR)
 
-## Linter
-## CMocka
+## Testing
 
-Test is run with CMocka, it output a JUnit xml on stdout.
-Cmocka is a submodule, so run :
+### Unit test
+
+unit_test.mk is a simple Makefile that allow to build a single source file along with a test source file.
+It build object ready for coverage, run binary and use gcovr to produce coverage output.
+Test is run with CMocka, it output a JUnit xml.
 ```
-git submodule update --init
+make -f unit_test.mk
 ```
-When cloning repository.
+unit_test.mk is made to be controllable by caller script (TBD).
