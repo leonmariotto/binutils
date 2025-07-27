@@ -1,4 +1,8 @@
 
 nm*
 build/*
-unit-test*
+
+.cache/
+compile_commands.json
+unit_test_*
+
