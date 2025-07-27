@@ -4,7 +4,6 @@
 
 #include "liblst.h"
 #include "nm_getopt.h"
-
 // stat
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,9 +14,6 @@
 
 // mmap
 #include <sys/mman.h>
-
-// TODO 
-#include "nm_utils.h"
 
 // printf
 #include "stdio.h"
@@ -30,9 +26,11 @@
 #include <byteswap.h>
 #include <arpa/inet.h>
 
-#define _error(str) do {\
-	fprintf(stderr, "[ERROR] mem[%ld]=%x (%s)\n", (uint64_t)offset, bin->mem[offset], str);\
-	r = -1; \
+#include <errno.h>
+
+#define _error(r, str) do {\
+	fprintf(stderr, "[ERROR] %s\n", str);\
+    r = EFAULT; \
 } while (0)
 
 #define _swap16(x) (bin->endian == ELFDATA2MSB ? htons(x) : x)

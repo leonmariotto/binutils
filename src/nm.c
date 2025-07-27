@@ -1,6 +1,7 @@
 #include "nm_bin.h"
 
 #include <string.h>
+#include "nm_utils.h"
 
 #define STBLOCKS_UNIT 512
 

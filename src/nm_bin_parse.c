@@ -3,26 +3,23 @@
 static int	nm_bin_parse64_ehdr(t_nm_bin *bin)
 {
 	int r = 0;
-	int offset = 0x18;
 
-	offset += 8;
 	if (((Elf64_Ehdr*)bin->mem)->e_phoff > bin->length) {
-		_error("e_phoff outside the scope");
+		_error(r, "e_phoff outside the scope");
 	}
 	if (r == 0) {
-		offset += 8;
 		if (((Elf64_Ehdr*)bin->mem)->e_shoff > bin->length) {
-			_error("e_shoff outside the scope");
+			_error(r, "e_shoff outside the scope");
 		}
 	}
 	if (r == 0) {
 		if (((Elf64_Ehdr*)bin->mem)->e_phentsize * ((Elf64_Ehdr*)bin->mem)->e_phnum + ((Elf64_Ehdr*)bin->mem)->e_phoff > bin->length) {
-			_error("phdr table run out of scope");
+			_error(r, "phdr table run out of scope");
 		}
 	}
 	if (r == 0) {
 		if (((Elf64_Ehdr*)bin->mem)->e_shentsize * ((Elf64_Ehdr*)bin->mem)->e_shnum + ((Elf64_Ehdr*)bin->mem)->e_shoff > bin->length) {
-			_error("shdr table run out of scope");
+			_error(r, "shdr table run out of scope");
 		}
 	}
 	if (r == 0) {
@@ -34,26 +31,23 @@ static int	nm_bin_parse64_ehdr(t_nm_bin *bin)
 static int	nm_bin_parse32_ehdr(t_nm_bin *bin)
 {
 	int r = 0;
-	int offset = 0x18;
 
-	offset += 8;
 	if (((Elf32_Ehdr*)bin->mem)->e_phoff > bin->length) {
-		_error("e_phoff outside the scope");
+		_error(r, "e_phoff outside the scope");
 	}
 	if (r == 0) {
-		offset += 8;
 		if (((Elf32_Ehdr*)bin->mem)->e_shoff > bin->length) {
-			_error("e_shoff outside the scope");
+			_error(r, "e_shoff outside the scope");
 		}
 	}
 	if (r == 0) {
 		if (((Elf32_Ehdr*)bin->mem)->e_phentsize * ((Elf32_Ehdr*)bin->mem)->e_phnum + ((Elf32_Ehdr*)bin->mem)->e_phoff > bin->length) {
-			_error("phdr table run out of scope");
+			_error(r, "phdr table run out of scope");
 		}
 	}
 	if (r == 0) {
 		if (((Elf32_Ehdr*)bin->mem)->e_shentsize * ((Elf32_Ehdr*)bin->mem)->e_shnum + ((Elf32_Ehdr*)bin->mem)->e_shoff > bin->length) {
-			_error("shdr table run out of scope");
+			_error(r, "shdr table run out of scope");
 		}
 	}
 	if (r == 0) {
@@ -68,33 +62,33 @@ int	nm_bin_parse_ehdr(t_nm_bin *bin)
 	int r = 0;
 
 	if (!bin || !bin->mem) {
-		_error("Internal Error");
+		_error(r, "Internal Error");
 	} else if (bin->length < 0x40) {
-		_error("Invalid length (<0x40)");
+		_error(r, "Invalid length (<0x40)");
 	} else if (bin->mem[offset++] != 0x7f) {
-		_error("Invalid magic numer");
+		_error(r, "Invalid magic numer");
 	} else if (bin->mem[offset++] != 0x45) {
-		_error("Invalid magic numer");
+		_error(r, "Invalid magic numer");
 	} else if (bin->mem[offset++] != 0x4c) {
-		_error("Invalid magic numer");
+		_error(r, "Invalid magic numer");
 	} else if (bin->mem[offset++] != 0x46) {
-		_error("Invalid magic numer");
+		_error(r, "Invalid magic numer");
 	} else if (bin->mem[offset] != ELFCLASS32
 		&& bin->mem[offset] != ELFCLASS64) {
-		_error("invalid EI_CLASS");
+		_error(r, "invalid EI_CLASS");
 	} else {
 		/* 32bits program or 64bits program */
 		bin->elfclass = bin->mem[offset++];
 		if (bin->mem[offset] != ELFDATA2LSB
 			&& bin->mem[offset] != ELFDATA2MSB) {
-			_error("invalid EI_DATA");
+			_error(r, "invalid EI_DATA");
 		}
 	}
 	if (r == 0) {
 		/* Endianness, affect fields starting from 0x10 */
 		bin->endian = bin->mem[offset++];
 		if (bin->mem[offset] > 0x12) {
-			_error("invalid EI_OSABI");
+			_error(r, "invalid EI_OSABI");
 		}
 	}
 	if (r == 0) {
@@ -118,14 +112,14 @@ int	nm_bin_parse_phdr_32(t_nm_bin *bin)
 	while (r == 0 && idx < bin->ehdr32->e_phnum)
 	{
 		if (offset >= bin->length) {
-			_error("offset out of scope in phdr table");
+			_error(r, "offset out of scope in phdr table");
 		}
 		phdr.idx = idx;
 		phdr.phdr = ((Elf32_Phdr*)&bin->mem[offset]);
 		phdr.bin = bin;
 		new = ft_lstnew(&phdr, sizeof(phdr));
 		if (!new) {
-			_error("malloc error");
+			_error(r, "malloc error");
 		}
 		ft_lstpush(&bin->phdr, new);
 		offset += bin->ehdr32->e_phentsize;
@@ -145,14 +139,14 @@ int	nm_bin_parse_phdr_64(t_nm_bin *bin)
 	while (r == 0 && idx < bin->ehdr64->e_phnum)
 	{
 		if (offset >= bin->length) {
-			_error("offset out of scope in phdr table");
+			_error(r, "offset out of scope in phdr table");
 		}
 		phdr.idx = idx;
 		phdr.phdr = ((Elf64_Phdr*)&bin->mem[offset]);
 		phdr.bin = bin;
 		new = ft_lstnew(&phdr, sizeof(phdr));
 		if (!new) {
-			_error("malloc error");
+			_error(r, "malloc error");
 		}
 		ft_lstpush(&bin->phdr, new);
 		offset += bin->ehdr64->e_phentsize;
@@ -193,7 +187,7 @@ int	nm_bin_parse_shdr_32(t_nm_bin *bin)
 		while (r == 0 && idx < bin->ehdr32->e_shnum)
 		{
 			if (offset >= bin->length) {
-				_error("offset out of scope in shdr table");
+				_error(r, "offset out of scope in shdr table");
 			}
 			if (r == 0)
 			{
@@ -206,7 +200,7 @@ int	nm_bin_parse_shdr_32(t_nm_bin *bin)
 			{
 				new = ft_lstnew(&shdr, sizeof(shdr));
 				if (!new) {
-					_error("malloc error");
+					_error(r, "malloc error");
 				}
 			}
 			if (r == 0)
@@ -220,7 +214,7 @@ int	nm_bin_parse_shdr_32(t_nm_bin *bin)
 			}
 		}
 		if (symtabstrndx < 0) {
-			_error("symtab not found in sections");
+			_error(r, "symtab not found in sections");
 		}
 		if (r == 0)
 		{
@@ -262,7 +256,7 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 		while (r == 0 && idx < bin->ehdr64->e_shnum)
 		{
 			if (offset >= bin->length) {
-				_error("offset out of scope in shdr table");
+				_error(r, "offset out of scope in shdr table");
 			}
 			if (r == 0)
 			{
@@ -275,7 +269,7 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 			{
 				new = ft_lstnew(&shdr, sizeof(shdr));
 				if (!new) {
-					_error("malloc error");
+					_error(r, "malloc error");
 				}
 			}
 			if (r == 0)
@@ -295,7 +289,7 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 			}
 		}
 		if (symtabstrndx < 0) {
-			_error("symtab not found in sections");
+			_error(r, "symtab not found in sections");
 		}
 		if (r == 0)
 		{
@@ -350,7 +344,7 @@ int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
 		{
 			uint64_t offset = sym_offset + ((Elf64_Shdr*)symtab)->sh_offset;
 			if (offset + sizeof(Elf64_Shdr) > bin->length) {
-				_error("offset out of scope in shdr table");
+				_error(r, "offset out of scope in shdr table");
 			}
 			if (r == 0)
 			{
@@ -359,10 +353,10 @@ int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
 				syms.bin = bin;
 				if (!syms.bin->strtab64)
 				{
-					_error("no strtab found");
+					_error(r, "no strtab found");
 				}
 				if (r == 0 && syms.syms->st_name + syms.bin->strtab64->shdr->sh_offset > bin->length) {
-					_error("symbol name value out of scope");
+					_error(r, "symbol name value out of scope");
 				}
 			}
 			if (r == 0)
@@ -375,7 +369,7 @@ int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
 				}
 				new = ft_lstnew(&syms, sizeof(t_nm_syms64));
 				if (!new) {
-					_error("malloc error");
+					_error(r, "malloc error");
 				} else {
 					ft_lstpush(&bin->syms, new);
 				}
@@ -404,7 +398,7 @@ int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
 		{
 			uint32_t offset = sym_offset + ((Elf32_Shdr*)symtab)->sh_offset;
 			if (offset + sizeof(Elf64_Shdr) > bin->length) {
-				_error("offset out of scope in shdr table");
+				_error(r, "offset out of scope in shdr table");
 			}
 			if (r == 0)
 			{
@@ -413,10 +407,10 @@ int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
 				syms.bin = bin;
 				if (!syms.bin->strtab32)
 				{
-					_error("no strtab found");
+					_error(r, "no strtab found");
 				}
 				if (r == 0 && syms.syms->st_name + syms.bin->strtab32->shdr->sh_offset > bin->length) {
-					_error("symbol name value out of scope");
+					_error(r, "symbol name value out of scope");
 				}
 			}
 			if (r == 0)
@@ -429,7 +423,7 @@ int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
 				}
 				new = ft_lstnew(&syms, sizeof(t_nm_syms32));
 				if (!new) {
-					_error("malloc error");
+					_error(r, "malloc error");
 				} else {
 					ft_lstpush(&bin->syms, new);
 				}
