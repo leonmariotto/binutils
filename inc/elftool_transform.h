@@ -1,7 +1,7 @@
 #ifndef ELFTOOL_TRANSFORM_H
 # define ELFTOOL_TRANSFORM_H
 
-#include "elftool.h"
+#include "elftool_structs.h"
 
 #define NM_CODECAVE_INJECT 0
 #define NM_SILVIO_INJECT 1

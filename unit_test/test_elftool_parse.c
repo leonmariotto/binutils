@@ -8,7 +8,7 @@
 #include "cmocka.h"
 
 #include <elf.h>
-#include "elftool.h"
+#include "elftool_parse.h"
 
 static void test_elftool_parse64_ehdr(void **state)
 {
