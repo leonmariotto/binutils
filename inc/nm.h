@@ -6,6 +6,6 @@
 #include "nm_bin.h"
 
 int	nm_getopt(int ac, char **av, t_nm_opt *opt);
-int	nm(t_nm_opt *opt);
+int	elftool(t_nm_opt *opt);
 
 #endif

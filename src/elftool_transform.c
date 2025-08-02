@@ -1,7 +1,8 @@
-#include "nm_bin_transform.h"
+#include "elftool.h"
+#include "elftool_transform.h"
 #include <string.h>
 
-int		nm_bin_transform(t_nm_bin *bin, t_nm_bin_transform *transform)
+int		nm_bin_transform(elftool_t *bin, elftool_transform_t *transform)
 {
 	int		r = 0;
 
@@ -24,7 +25,7 @@ int		nm_bin_transform(t_nm_bin *bin, t_nm_bin_transform *transform)
 	return (r);
 }
 
-int		nm_bin_transform_codecave_injection(t_nm_bin *bin, t_nm_bin_transform *transform)
+int		nm_bin_transform_codecave_injection(elftool_t *bin, elftool_transform_t *transform)
 {
 	int r = 0;
 
@@ -39,23 +40,23 @@ int		nm_bin_transform_codecave_injection(t_nm_bin *bin, t_nm_bin_transform *tran
 	return (r);
 }
 
-int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
+int		inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
 {
 	int r = 0;
 	uint64_t code_len_aligned = transform->code_len % 4096 == 0
 		? transform->code_len
 		: ((transform->code_len / 4096 + 1) * 4096);
-	t_nm_phdr64 *last_ptload = NULL;
-	t_nm_shdr64 *last_shdr = NULL;
-	t_nm_shdr64 new_shdr_entry = {0};
+	phdr64_t *last_ptload = NULL;
+	shdr64_t *last_shdr = NULL;
+	shdr64_t new_shdr_entry = {0};
 	Elf64_Shdr *new_shdr = NULL;
 
 	fprintf(stderr, "%s:%d\n", __func__, __LINE__);
 	/* Find last PT_LOAD */
 	for (t_list *head = bin->phdr ; head ; head = head->next) {
-		if (((t_nm_phdr64*)head->content)->phdr->p_type == PT_LOAD
-				&& (!last_ptload || last_ptload->phdr->p_vaddr < ((t_nm_phdr64*)head->content)->phdr->p_vaddr)) {
-			last_ptload = (t_nm_phdr64*)head->content;
+		if (((phdr64_t*)head->content)->phdr->p_type == PT_LOAD
+				&& (!last_ptload || last_ptload->phdr->p_vaddr < ((phdr64_t*)head->content)->phdr->p_vaddr)) {
+			last_ptload = (phdr64_t*)head->content;
 		}
 	}
 	if (!last_ptload)
@@ -67,12 +68,12 @@ int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
 		fprintf(stderr, "%s:%d\n", __func__, __LINE__);
 		/* Find last section for this segment */
 		for (t_list *head = bin->shdr ; head ; head = head->next) {
-			if (((t_nm_shdr64*)head->content)->shdr->sh_offset
+			if (((shdr64_t*)head->content)->shdr->sh_offset
 						> last_ptload->phdr->p_offset
-				&& ((t_nm_shdr64*)head->content)->shdr->sh_offset
+				&& ((shdr64_t*)head->content)->shdr->sh_offset
 						< last_ptload->phdr->p_offset + last_ptload->phdr->p_filesz
-				&& (!last_shdr || last_shdr->shdr->sh_offset < ((t_nm_shdr64*)head->content)->shdr->sh_offset)) {
-				last_shdr = (t_nm_shdr64*)head->content;
+				&& (!last_shdr || last_shdr->shdr->sh_offset < ((shdr64_t*)head->content)->shdr->sh_offset)) {
+				last_shdr = (shdr64_t*)head->content;
 			}
 		}
 		if (!last_shdr) {
@@ -106,21 +107,21 @@ int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
 			fprintf(stderr, "%s:%d\n", __func__, __LINE__);
 			for (t_list *head = bin->shdr ; head && r == 0 ; head = head->next) {
 				/* Increase next idx */
-				if (head->content && ((t_nm_shdr64*)head->content)->idx > last_shdr->idx) {
-					((t_nm_shdr64*)head->content)->idx += 1;
+				if (head->content && ((shdr64_t*)head->content)->idx > last_shdr->idx) {
+					((shdr64_t*)head->content)->idx += 1;
 				}
 				/* Update offset */
-				if (head->content && ((t_nm_shdr64*)head->content)->shdr->sh_offset
+				if (head->content && ((shdr64_t*)head->content)->shdr->sh_offset
 						> new_shdr->sh_offset) {
 					fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-					((t_nm_shdr64*)head->content)->shdr->sh_offset += code_len_aligned;
-					((t_nm_shdr64*)head->content)->shdr->sh_addr += code_len_aligned;
+					((shdr64_t*)head->content)->shdr->sh_offset += code_len_aligned;
+					((shdr64_t*)head->content)->shdr->sh_addr += code_len_aligned;
 				}
 			}
 			fprintf(stderr, "%s:%d\n", __func__, __LINE__);
 			/* Add the new section in the section list */
 			for (t_list *head = bin->shdr ; head && r == 0 ; head = head->next) {
-				if (((t_nm_shdr64*)head->content)->idx == last_shdr->idx) {
+				if (((shdr64_t*)head->content)->idx == last_shdr->idx) {
 					t_list *new = ft_lstnew(&new_shdr_entry, sizeof(new_shdr_entry));
 					if (!new) {
 						r = -1;
@@ -130,10 +131,10 @@ int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
 						head->next = new;
 					}
 				}
-				if (((t_nm_shdr64*)head->content)->shdr->sh_type == SHT_DYNSYM
-						|| ((t_nm_shdr64*)head->content)->shdr->sh_type == SHT_SYMTAB) {
-					if (((t_nm_shdr64*)head->content)->shdr->sh_link > new_shdr_entry.idx) {
-						((t_nm_shdr64*)head->content)->shdr->sh_link += 1;
+				if (((shdr64_t*)head->content)->shdr->sh_type == SHT_DYNSYM
+						|| ((shdr64_t*)head->content)->shdr->sh_type == SHT_SYMTAB) {
+					if (((shdr64_t*)head->content)->shdr->sh_link > new_shdr_entry.idx) {
+						((shdr64_t*)head->content)->shdr->sh_link += 1;
 					}
 				}
 			}
@@ -145,10 +146,10 @@ int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
 			last_ptload->phdr->p_filesz += code_len_aligned;
 			last_ptload->phdr->p_memsz += code_len_aligned;
 			for (t_list *head = bin->phdr ; head ; head = head->next) {
-				if (((t_nm_phdr64*)head->content)->phdr->p_offset > last_ptload->phdr->p_offset
+				if (((phdr64_t*)head->content)->phdr->p_offset > last_ptload->phdr->p_offset
 						+ (last_ptload->phdr->p_filesz - code_len_aligned)) {
-					((t_nm_phdr64*)head->content)->phdr->p_offset += code_len_aligned;
-					((t_nm_phdr64*)head->content)->phdr->p_vaddr += code_len_aligned;
+					((phdr64_t*)head->content)->phdr->p_offset += code_len_aligned;
+					((phdr64_t*)head->content)->phdr->p_vaddr += code_len_aligned;
 				}
 			}
 		}
@@ -163,7 +164,7 @@ int		inject_shdr64(t_nm_bin *bin, t_nm_bin_transform *transform)
 	return (r);
 }
 
-int		nm_bin_transform_section_injection(t_nm_bin *bin, t_nm_bin_transform *transform)
+int		nm_bin_transform_section_injection(elftool_t *bin, elftool_transform_t *transform)
 {
 	int r = 0;
 
@@ -184,7 +185,7 @@ int		nm_bin_transform_section_injection(t_nm_bin *bin, t_nm_bin_transform *trans
 	return (r);
 }
 
-int		nm_bin_transform_silvio_injection(t_nm_bin *bin, t_nm_bin_transform *transform)
+int		nm_bin_transform_silvio_injection(elftool_t *bin, elftool_transform_t *transform)
 {
 	int r = 0;
 

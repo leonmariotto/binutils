@@ -1,6 +1,6 @@
 
 
-NAME := nm
+NAME := elftool
 NAME_COVERAGE := $(NAME)_coverage
 NAME_PROFILING := $(NAME)_profiling
 
@@ -39,15 +39,12 @@ CALLGRAPH_DIR = $(BUILD_DIR)/callgraph
 
 SRC := 											\
 	src/main.c									\
-	src/nm_bin.c								\
-	src/nm_bin_dump.c							\
-	src/nm_bin_parse.c							\
-	src/nm_bin_test.c							\
-	src/nm_bin_transform.c						\
-	src/nm_bin_write.c							\
-	src/nm.c									\
-	src/nm_getopt.c								\
-	src/nm_utils.c								\
+	src/elftool.c								\
+	src/elftool_dump.c							\
+	src/elftool_getopt.c						\
+	src/elftool_parse.c							\
+	src/elftool_transform.c						\
+	src/elftool_write.c							\
 
 INCDIR := inc/				\
 		  	libft/			\
@@ -137,6 +134,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 	rm -f $(NAME) $(NAME_COVERAGE) $(NAME_PROFILING)
 	rm -f *.cgraph
+	rm -rf unit_test_*
 
 $(MISRA_REPORT_FILE): $(SRC) $(wildcard $(INC_DIR)/*.h)
 	cppcheck --template="{file}:{line}:{column}: {id}:{severity}:{message}" --output-file=$@ --addon=misra/misra.json $(SRC) $(wildcard $(INC_DIR)/*.h)

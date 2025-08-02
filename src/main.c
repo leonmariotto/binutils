@@ -10,17 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "nm.h"
+#include "elftool.h"
 
 int		main(int ac, char **av)
 {
 	int		r;
-	t_nm_opt	opt = {0};
+	elftool_opt_t	opt = {0};
 
-	r = nm_getopt(ac, av, &opt);
+	r = elftool_getopt(ac, av, &opt);
 //	nm_printopt(&opt);
 	if (r == 0) {
-		r = nm(&opt);
+		r = elftool(&opt);
 	}
 	return (r);
 }

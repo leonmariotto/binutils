@@ -1,14 +1,11 @@
-#include "nm_bin.h"
-#include <elf.h>
-#include <stdio.h>
-#include "nm_bin.h"
+#include "elftool.h"
 #include <elf.h>
 #include <stdio.h>
 #include <string.h>
 
-extern t_nm_bin bin;
+extern elftool_t bin;
 
-void	nm_bin_dump_ehdr(t_nm_bin *bin)
+void	elftool_dump_ehdr(elftool_t *bin)
 {
 	printf("===== ELF HEADER\n");
 	if (bin->elfclass == ELFCLASS32) {
@@ -68,7 +65,7 @@ static char strcmp_nm(char *min, char *cur)
 	return (strcmp(min, cur));
 }
 
-static int sort_symbols64(t_nm_bin *bin)
+static int sort_symbols64(elftool_t *bin)
 {
 	t_list *head = NULL;
 	t_list *new;
@@ -82,15 +79,15 @@ static int sort_symbols64(t_nm_bin *bin)
 
 	// remove the first indice
 	ft_lstdelone(&bin->syms, default_del);
-	while (ELF64_ST_TYPE(((t_nm_syms64*)bin->syms->content)->syms->st_info) == STT_SECTION
-			|| ELF64_ST_TYPE(((t_nm_syms64*)bin->syms->content)->syms->st_info) == STT_FILE)
+	while (ELF64_ST_TYPE(((syms64_t*)bin->syms->content)->syms->st_info) == STT_SECTION
+			|| ELF64_ST_TYPE(((syms64_t*)bin->syms->content)->syms->st_info) == STT_FILE)
 	{
 		ft_lstdelone(&bin->syms, default_del);
 	}
 	head = bin->syms;
 	while (head->next) {
-		if (ELF64_ST_TYPE(((t_nm_syms64*)head->next->content)->syms->st_info) == STT_SECTION
-				|| ELF64_ST_TYPE(((t_nm_syms64*)head->next->content)->syms->st_info) == STT_FILE)
+		if (ELF64_ST_TYPE(((syms64_t*)head->next->content)->syms->st_info) == STT_SECTION
+				|| ELF64_ST_TYPE(((syms64_t*)head->next->content)->syms->st_info) == STT_FILE)
 		{
 			ft_lstdelone(&head->next, default_del);
 		}
@@ -104,8 +101,8 @@ static int sort_symbols64(t_nm_bin *bin)
 		index = 0;
 		min = (char*)ff;
 		while (head) {
-			cur = (char*)&((t_nm_syms64*)head->content)->bin->mem[((t_nm_syms64*)head->content)
-					->bin->strtab64->shdr->sh_offset + ((t_nm_syms64*)head->content)->syms->st_name];
+			cur = (char*)&((syms64_t*)head->content)->bin->mem[((syms64_t*)head->content)
+					->bin->strtab64->shdr->sh_offset + ((syms64_t*)head->content)->syms->st_name];
 			if (strcmp_nm(min, cur) > 0) {
 				min = cur;
 				indexSelected = index;
@@ -154,7 +151,7 @@ static int sort_symbols64(t_nm_bin *bin)
 	return (0);
 }
 
-static int sort_symbols32(t_nm_bin *bin)
+static int sort_symbols32(elftool_t *bin)
 {
 	t_list *head = NULL;
 	t_list *new;
@@ -168,15 +165,15 @@ static int sort_symbols32(t_nm_bin *bin)
 
 	// remove the first indice
 	ft_lstdelone(&bin->syms, default_del);
-	while (ELF32_ST_TYPE(((t_nm_syms32*)bin->syms->content)->syms->st_info) == STT_SECTION
-			|| ELF32_ST_TYPE(((t_nm_syms32*)bin->syms->content)->syms->st_info) == STT_FILE)
+	while (ELF32_ST_TYPE(((syms32_t*)bin->syms->content)->syms->st_info) == STT_SECTION
+			|| ELF32_ST_TYPE(((syms32_t*)bin->syms->content)->syms->st_info) == STT_FILE)
 	{
 		ft_lstdelone(&bin->syms, default_del);
 	}
 	head = bin->syms;
 	while (head->next) {
-		if (ELF32_ST_TYPE(((t_nm_syms32*)head->next->content)->syms->st_info) == STT_SECTION
-				|| ELF32_ST_TYPE(((t_nm_syms32*)head->next->content)->syms->st_info) == STT_FILE)
+		if (ELF32_ST_TYPE(((syms32_t*)head->next->content)->syms->st_info) == STT_SECTION
+				|| ELF32_ST_TYPE(((syms32_t*)head->next->content)->syms->st_info) == STT_FILE)
 		{
 			ft_lstdelone(&head->next, default_del);
 		}
@@ -190,9 +187,9 @@ static int sort_symbols32(t_nm_bin *bin)
 		index = 0;
 		min = (char*)ff;
 		while (head) {
-			cur = (char*)&((t_nm_syms32*)head->content)->bin->mem[((t_nm_syms32*)head->content)
-					->bin->strtab32->shdr->sh_offset + ((t_nm_syms32*)head->content)->syms->st_name];
-			// fprintf(stderr, "cur={%s} min={%s} st_name=%d\n", cur, min, ((t_nm_syms32*)head->content)->syms->st_name);
+			cur = (char*)&((syms32_t*)head->content)->bin->mem[((syms32_t*)head->content)
+					->bin->strtab32->shdr->sh_offset + ((syms32_t*)head->content)->syms->st_name];
+			// fprintf(stderr, "cur={%s} min={%s} st_name=%d\n", cur, min, ((syms32_t*)head->content)->syms->st_name);
 			if (strcmp_nm(min, cur) > 0) {
 				min = cur;
 				indexSelected = index;
@@ -318,9 +315,9 @@ static char	nm_flag_magic(uint8_t type,
 	return (nm_id);
 }
 
-void	nm_bin_dump_nm32(t_list *lst_syms)
+void	elftool_dump_nm32(t_list *lst_syms)
 {
-	t_nm_syms32 *syms = (t_nm_syms32*)lst_syms->content;
+	syms32_t *syms = (syms32_t*)lst_syms->content;
 	uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
 	uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
 	char nm_id = '?';
@@ -354,9 +351,9 @@ void	nm_bin_dump_nm32(t_list *lst_syms)
 	}
 }
 
-void	nm_bin_dump_nm64(t_list *lst_syms)
+void	elftool_dump_nm64(t_list *lst_syms)
 {
-	t_nm_syms64 *syms = (t_nm_syms64*)lst_syms->content;
+	syms64_t *syms = (syms64_t*)lst_syms->content;
 	uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
 	uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
 	char nm_id = '?';
@@ -389,39 +386,39 @@ void	nm_bin_dump_nm64(t_list *lst_syms)
 	}
 }
 
-void	nm_bin_dump_nm(t_nm_bin *bin)
+void	elftool_dump_nm(elftool_t *bin)
 {
 	if (bin->elfclass == ELFCLASS32) {
 		/* Ignore first symbole always NULL */
 
 		sort_symbols32(bin);
 		if (bin->syms) {
-			ft_lstiter(bin->syms, nm_bin_dump_nm32);
+			ft_lstiter(bin->syms, elftool_dump_nm32);
 		}
 		else {
-			fprintf(stderr, "ft_nm: %s: no symbols\n", bin->path);
+			fprintf(stderr, "elftool: %s: no symbols\n", bin->path);
 		}
 	}
 	else {
 		/* Ignore first symbole always NULL */
 		if (bin->syms) {
 			sort_symbols64(bin);
-			// ft_lstiter(bin->syms->next, nm_bin_dump_nm64);
-			ft_lstiter(bin->syms, nm_bin_dump_nm64);
+			// ft_lstiter(bin->syms->next, elftool_dump_nm64);
+			ft_lstiter(bin->syms, elftool_dump_nm64);
 		}
 		else {
-			fprintf(stderr, "ft_nm: %s: no symbols\n", bin->path);
+			fprintf(stderr, "elftool: %s: no symbols\n", bin->path);
 		}
 	}
 }
 
-void	nm_bin_dump_phdr32(t_list *lst_phdr)
+void	elftool_dump_phdr32(t_list *lst_phdr)
 {
-	t_nm_phdr32 *phdr = NULL;
+	phdr32_t *phdr = NULL;
 	
 	if (lst_phdr)
 	{
-		phdr = (t_nm_phdr32*)lst_phdr->content;
+		phdr = (phdr32_t*)lst_phdr->content;
 	}
 	if (phdr)
 	{
@@ -442,13 +439,13 @@ void	nm_bin_dump_phdr32(t_list *lst_phdr)
 	}
 }
 
-void	nm_bin_dump_phdr64(t_list *lst_phdr)
+void	elftool_dump_phdr64(t_list *lst_phdr)
 {
-	t_nm_phdr64 *phdr = NULL;
+	phdr64_t *phdr = NULL;
 	
 	if (lst_phdr)
 	{
-		phdr = (t_nm_phdr64*)lst_phdr->content;
+		phdr = (phdr64_t*)lst_phdr->content;
 	}
 	if (phdr)
 	{
@@ -477,7 +474,7 @@ void	nm_bin_dump_phdr64(t_list *lst_phdr)
 	}
 }
 
-void	nm_bin_dump_phdr(t_nm_bin *bin)
+void	elftool_dump_phdr(elftool_t *bin)
 {
 	if (bin)
 	{
@@ -493,10 +490,10 @@ void	nm_bin_dump_phdr(t_nm_bin *bin)
 							"filesz",
 							"memsz",
 							"align");
-				ft_lstiter(bin->phdr, nm_bin_dump_phdr32);
+				ft_lstiter(bin->phdr, elftool_dump_phdr32);
 			}
 			else {
-				fprintf(stderr, "ft_nm: %s: no program header\n", bin->path);
+				fprintf(stderr, "elftool: %s: no program header\n", bin->path);
 			}
 		}
 		else {
@@ -510,22 +507,22 @@ void	nm_bin_dump_phdr(t_nm_bin *bin)
 							"filesz",
 							"memsz",
 							"align");
-				ft_lstiter(bin->phdr, nm_bin_dump_phdr64);
+				ft_lstiter(bin->phdr, elftool_dump_phdr64);
 			}
 			else {
-				fprintf(stderr, "ft_nm: %s: no program header\n", bin->path);
+				fprintf(stderr, "elftool: %s: no program header\n", bin->path);
 			}
 		}
 		printf("\n");
 	}
 }
-void	nm_bin_dump_shdr32(t_list *lst_shdr)
+void	elftool_dump_shdr32(t_list *lst_shdr)
 {
-	t_nm_shdr32 *shdr = NULL;
+	shdr32_t *shdr = NULL;
 	
 	if (lst_shdr)
 	{
-		shdr = (t_nm_shdr32*)lst_shdr->content;
+		shdr = (shdr32_t*)lst_shdr->content;
 	}
 	if (shdr)
 	{
@@ -548,13 +545,13 @@ void	nm_bin_dump_shdr32(t_list *lst_shdr)
 	}
 }
 
-void	nm_bin_dump_shdr64(t_list *lst_shdr)
+void	elftool_dump_shdr64(t_list *lst_shdr)
 {
-	t_nm_shdr64 *shdr = NULL;
+	shdr64_t *shdr = NULL;
 	
 	if (lst_shdr)
 	{
-		shdr = (t_nm_shdr64*)lst_shdr->content;
+		shdr = (shdr64_t*)lst_shdr->content;
 	}
 	if (shdr)
 	{
@@ -576,7 +573,7 @@ void	nm_bin_dump_shdr64(t_list *lst_shdr)
 	}
 }
 
-void	nm_bin_dump_shdr(t_nm_bin *bin)
+void	elftool_dump_shdr(elftool_t *bin)
 {
 	printf("===== SECTION HEADER\n");
 	if (bin->elfclass == ELFCLASS32) {
@@ -592,7 +589,7 @@ void	nm_bin_dump_shdr(t_nm_bin *bin)
 					"info",
 					"align",
 					"entsize");
-		ft_lstiter(bin->shdr, nm_bin_dump_shdr32);
+		ft_lstiter(bin->shdr, elftool_dump_shdr32);
 	}
 	else {
 		printf("%3s %16s %8s %10s %10s %10s %10s %4.4s %4.4s %5.5s %5.5s\n",
@@ -607,18 +604,18 @@ void	nm_bin_dump_shdr(t_nm_bin *bin)
 					"info",
 					"align",
 					"entsize");
-		ft_lstiter(bin->shdr, nm_bin_dump_shdr64);
+		ft_lstiter(bin->shdr, elftool_dump_shdr64);
 	}
 	printf("\n");
 }
 
-void	nm_bin_dump_syms32(t_list *lst_syms)
+void	elftool_dump_syms32(t_list *lst_syms)
 {
-	t_nm_syms32 *syms = NULL;
+	syms32_t *syms = NULL;
 	
 	if (lst_syms)
 	{
-		syms = (t_nm_syms32*)lst_syms->content;
+		syms = (syms32_t*)lst_syms->content;
 	}
 	if (syms)
 	{
@@ -683,13 +680,13 @@ void	nm_bin_dump_syms32(t_list *lst_syms)
 	}
 }
 
-void	nm_bin_dump_syms64(t_list *lst_syms)
+void	elftool_dump_syms64(t_list *lst_syms)
 {
-	t_nm_syms64 *syms = NULL;
+	syms64_t *syms = NULL;
 	
 	if (lst_syms)
 	{
-		syms = (t_nm_syms64*)lst_syms->content;
+		syms = (syms64_t*)lst_syms->content;
 	}
 	if (syms)
 	{
@@ -754,7 +751,7 @@ void	nm_bin_dump_syms64(t_list *lst_syms)
 	}
 }
 
-void	nm_bin_dump_syms(t_nm_bin *bin)
+void	elftool_dump_syms(elftool_t *bin)
 {
 	printf("===== SYMBOLS HEADER\n");
 	if (bin->elfclass == ELFCLASS32) {
@@ -767,7 +764,7 @@ void	nm_bin_dump_syms(t_nm_bin *bin)
 					"type",
 					"other",
 					"shndx");
-		ft_lstiter(bin->syms, nm_bin_dump_syms32);
+		ft_lstiter(bin->syms, elftool_dump_syms32);
 	}
 	else {
 		printf("%3s %32s %16s %6s %8s %8s %4s %6s\n",
@@ -779,7 +776,28 @@ void	nm_bin_dump_syms(t_nm_bin *bin)
 					"type",
 					"other",
 					"shndx");
-		ft_lstiter(bin->syms, nm_bin_dump_syms64);
+		ft_lstiter(bin->syms, elftool_dump_syms64);
 	}
 	printf("\n");
 }
+
+void	elftool_dump(elftool_opt_t *opt, elftool_t *bin)
+{
+
+	if (opt->ehdr) {
+		elftool_dump_ehdr(bin);
+	}
+	if (opt->phdr) {
+		elftool_dump_phdr(bin);
+	}
+	if (opt->shdr) {
+		elftool_dump_shdr(bin);
+	}
+	if (opt->syms) {
+		elftool_dump_syms(bin);
+	}
+	if (opt->nm) {
+		elftool_dump_nm(bin);
+	}
+}
+

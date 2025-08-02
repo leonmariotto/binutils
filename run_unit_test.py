@@ -3,7 +3,7 @@
 import logging
 import subprocess
 
-unit_list = ["nm_bin_parse", "nm_getopt"]
+unit_list = ["elftool_parse", "elftool_getopt"]
 
 def unit_test_run():
     for unit in unit_list:

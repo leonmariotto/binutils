@@ -1,5 +1,5 @@
 # Input variables
-UNIT_NAME = nm_bin_parse
+UNIT_NAME = elftool_parse
 # Warning: Do not put "./" before path
 # Currently only support a single unit src in gcovr cmdline
 UNIT_SRC = src/$(UNIT_NAME).c

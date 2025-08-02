@@ -8,12 +8,12 @@
 #include "cmocka.h"
 
 #include <elf.h>
-#include "nm_getopt.h"
+#include "elftool_getopt.h"
 
-static void test_nm_getopt(void **state)
+static void test_elftool_getopt(void **state)
 {
 	(void)state;
-	t_nm_opt opt = {0};
+	elftool_opt_t opt = {0};
 	int ac = 3;
 	char *av[] = {
 		"./nm",
@@ -21,7 +21,7 @@ static void test_nm_getopt(void **state)
 		"-s",
 		NULL
 	};
-	int r = nm_getopt(ac, av, &opt);
+	int r = elftool_getopt(ac, av, &opt);
 	assert_true(r == 0);
 	assert_true(opt.config == false);
 	assert_true(opt.ehdr == false);
@@ -35,7 +35,7 @@ static void test_nm_getopt(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_nm_getopt),
+		cmocka_unit_test(test_elftool_getopt),
     };
 	cmocka_set_message_output(CM_OUTPUT_XML);
     return cmocka_run_group_tests(tests, NULL, NULL);

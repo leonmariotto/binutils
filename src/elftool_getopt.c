@@ -1,4 +1,4 @@
-#include "nm_getopt.h"
+#include "elftool_getopt.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -30,7 +30,7 @@ static char	*flags_help[] = {
 	NULL
 };
 
-static int nm_getopt_outfile(t_nm_opt *opt, char *arg)
+static int elftool_getopt_outfile(elftool_opt_t *opt, char *arg)
 {
 	int r = 0;
 
@@ -51,13 +51,13 @@ static int nm_getopt_outfile(t_nm_opt *opt, char *arg)
 	}
 	return (r);
 }
-static int nm_getopt_nm(t_nm_opt *opt, char *arg)
+static int elftool_getopt_nm(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->nm = true;
 	return (0);
 }
-static int nm_getopt_help(t_nm_opt *opt, char *arg)
+static int elftool_getopt_help(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	(void)opt;
@@ -66,13 +66,13 @@ static int nm_getopt_help(t_nm_opt *opt, char *arg)
 	}
 	return (1);
 }
-static int nm_getopt_config(t_nm_opt *opt, char *arg)
+static int elftool_getopt_config(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->config = true;
 	return (0);
 }
-static int nm_getopt_test(t_nm_opt *opt, char *arg)
+static int elftool_getopt_test(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	// TODO
@@ -81,62 +81,62 @@ static int nm_getopt_test(t_nm_opt *opt, char *arg)
 	return (0);
 }
 
-static int nm_getopt_ehdr(t_nm_opt *opt, char *arg)
+static int elftool_getopt_ehdr(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->ehdr = true;
 	return (0);
 }
-static int nm_getopt_phdr(t_nm_opt *opt, char *arg)
+static int elftool_getopt_phdr(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->phdr = true;
 	return (0);
 }
-static int nm_getopt_section(t_nm_opt *opt, char *arg)
+static int elftool_getopt_section(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->shdr = true;
 	return (0);
 }
-static int nm_getopt_hexdump(t_nm_opt *opt, char *arg)
+static int elftool_getopt_hexdump(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->hexdump = true;
 	return (0);
 }
 
-static int nm_getopt_symbols(t_nm_opt *opt, char *arg)
+static int elftool_getopt_symbols(elftool_opt_t *opt, char *arg)
 {
 	(void)arg;
 	opt->syms = true;
 	return (0);
 }
 
-static int	(*flags_handler[])(t_nm_opt *, char *) = {
-	nm_getopt_help,
-	nm_getopt_help,
-	nm_getopt_config,
-	nm_getopt_config,
-	nm_getopt_phdr,
-	nm_getopt_phdr,
-	nm_getopt_ehdr,
-	nm_getopt_ehdr,
-	nm_getopt_section,
-	nm_getopt_section,
-	nm_getopt_symbols,
-	nm_getopt_symbols,
-	nm_getopt_hexdump,
-	nm_getopt_hexdump,
-	nm_getopt_nm,
-	nm_getopt_test,
+static int	(*flags_handler[])(elftool_opt_t *, char *) = {
+	elftool_getopt_help,
+	elftool_getopt_help,
+	elftool_getopt_config,
+	elftool_getopt_config,
+	elftool_getopt_phdr,
+	elftool_getopt_phdr,
+	elftool_getopt_ehdr,
+	elftool_getopt_ehdr,
+	elftool_getopt_section,
+	elftool_getopt_section,
+	elftool_getopt_symbols,
+	elftool_getopt_symbols,
+	elftool_getopt_hexdump,
+	elftool_getopt_hexdump,
+	elftool_getopt_nm,
+	elftool_getopt_test,
 #define START_2ARG_IDX 16
-	nm_getopt_outfile,
-	nm_getopt_outfile,
+	elftool_getopt_outfile,
+	elftool_getopt_outfile,
 	NULL,
 };
 
-int	nm_getopt(int ac, char **av, t_nm_opt *opt)
+int	elftool_getopt(int ac, char **av, elftool_opt_t *opt)
 {
 	int	i = 1;
 	int 	r = 0;
@@ -175,7 +175,7 @@ int	nm_getopt(int ac, char **av, t_nm_opt *opt)
 	return (r);
 }
 
-void	nm_printopt(t_nm_opt *opt)
+void	elftool_printopt(elftool_opt_t *opt)
 {
 	t_list *head = opt->bins;
 

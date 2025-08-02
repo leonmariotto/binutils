@@ -8,9 +8,9 @@
 #include "cmocka.h"
 
 #include <elf.h>
-#include "nm_bin.h"
+#include "elftool.h"
 
-static void test_nm_bin_parse64_ehdr(void **state)
+static void test_elftool_parse64_ehdr(void **state)
 {
 	(void)state;
 	Elf64_Ehdr hdr = {
@@ -22,11 +22,11 @@ static void test_nm_bin_parse64_ehdr(void **state)
 		.e_shentsize = 10,
 		.e_shnum = 10,
 	};
-	t_nm_bin bin = {
+	elftool_t bin = {
 		.mem = (void*)&hdr,
 		.length = 200,
 	};
-	int r = nm_bin_parse_ehdr(&bin);
+	int r = elftool_parse_ehdr(&bin);
 	assert_true(r == 0);
 	assert_true(bin.elfclass == ELFCLASS64);
 	assert_true(bin.endian == ELFDATA2LSB);
@@ -36,7 +36,7 @@ static void test_nm_bin_parse64_ehdr(void **state)
 int main(void)
 {
     const struct CMUnitTest tests[] = {
-		cmocka_unit_test(test_nm_bin_parse64_ehdr),
+		cmocka_unit_test(test_elftool_parse64_ehdr),
     };
 	cmocka_set_message_output(CM_OUTPUT_XML);
     return cmocka_run_group_tests(tests, NULL, NULL);

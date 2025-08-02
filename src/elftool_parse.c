@@ -1,6 +1,6 @@
-#include "nm_bin.h"
+#include "elftool.h"
 
-static int	nm_bin_parse64_ehdr(t_nm_bin *bin)
+static int	elftool_parse64_ehdr(elftool_t *bin)
 {
 	int r = 0;
 
@@ -28,7 +28,7 @@ static int	nm_bin_parse64_ehdr(t_nm_bin *bin)
 	return (r);
 }
 
-static int	nm_bin_parse32_ehdr(t_nm_bin *bin)
+static int	elftool_parse32_ehdr(elftool_t *bin)
 {
 	int r = 0;
 
@@ -56,7 +56,7 @@ static int	nm_bin_parse32_ehdr(t_nm_bin *bin)
 	return (r);
 }
 
-int	nm_bin_parse_ehdr(t_nm_bin *bin)
+int	elftool_parse_ehdr(elftool_t *bin)
 {
 	int offset = 0;
 	int r = 0;
@@ -94,16 +94,16 @@ int	nm_bin_parse_ehdr(t_nm_bin *bin)
 	if (r == 0) {
 		/* It is class specific from 0x14 */
 		if (bin->elfclass == ELFCLASS32) {
-			r = nm_bin_parse32_ehdr(bin);
+			r = elftool_parse32_ehdr(bin);
 		} else {
-			r = nm_bin_parse64_ehdr(bin);
+			r = elftool_parse64_ehdr(bin);
 		}
 	}
 	return (r);
 }
-int	nm_bin_parse_phdr_32(t_nm_bin *bin)
+int	elftool_parse_phdr_32(elftool_t *bin)
 {
-	t_nm_phdr32	phdr = {0};
+	phdr32_t	phdr = {0};
 	t_list		*new = NULL;
 	uint32_t	offset = bin->ehdr32->e_phoff;
 	uint16_t	idx = 0;
@@ -128,9 +128,9 @@ int	nm_bin_parse_phdr_32(t_nm_bin *bin)
 	return (r);
 }
 
-int	nm_bin_parse_phdr_64(t_nm_bin *bin)
+int	elftool_parse_phdr_64(elftool_t *bin)
 {
-	t_nm_phdr64	phdr = {0};
+	phdr64_t	phdr = {0};
 	t_list		*new = NULL;
 	uint64_t	offset = bin->ehdr64->e_phoff;
 	uint16_t	idx = 0;
@@ -155,23 +155,23 @@ int	nm_bin_parse_phdr_64(t_nm_bin *bin)
 	return (r);
 }
 
-int	nm_bin_parse_phdr(t_nm_bin *bin)
+int	elftool_parse_phdr(elftool_t *bin)
 {
 	int r = 0;
 
 	if (bin->elfclass == ELFCLASS32) {
-		r = nm_bin_parse_phdr_32(bin);
+		r = elftool_parse_phdr_32(bin);
 	}
 	else {
-		r = nm_bin_parse_phdr_64(bin);
+		r = elftool_parse_phdr_64(bin);
 	}
 	return (r);
 }
 
-int	nm_bin_parse_shdr_32(t_nm_bin *bin)
+int	elftool_parse_shdr_32(elftool_t *bin)
 {
 	t_list *head;
-	t_nm_shdr32	shdr = {0};
+	shdr32_t	shdr = {0};
 	t_list		*new = NULL;
 	uint32_t	offset = bin->ehdr32->e_shoff;
 	int			symtabstrndx = -1;
@@ -221,13 +221,13 @@ int	nm_bin_parse_shdr_32(t_nm_bin *bin)
 			head = bin->shdr;
 			while (head)
 			{
-				if (((t_nm_shdr32*)head->content)->shdr->sh_type == SHT_STRTAB)
+				if (((shdr32_t*)head->content)->shdr->sh_type == SHT_STRTAB)
 				{
-					if (bin->ehdr32->e_shstrndx == ((t_nm_shdr32*)head->content)->idx) {
-						bin->shstrtab32 = ((t_nm_shdr32*)head->content);
+					if (bin->ehdr32->e_shstrndx == ((shdr32_t*)head->content)->idx) {
+						bin->shstrtab32 = ((shdr32_t*)head->content);
 					}
-					if (symtabstrndx == ((t_nm_shdr32*)head->content)->idx) {
-						bin->strtab32 = ((t_nm_shdr32*)head->content);
+					if (symtabstrndx == ((shdr32_t*)head->content)->idx) {
+						bin->strtab32 = ((shdr32_t*)head->content);
 					}
 				}
 				head = head->next;
@@ -237,10 +237,10 @@ int	nm_bin_parse_shdr_32(t_nm_bin *bin)
 	return (r);
 }
 
-int	nm_bin_parse_shdr_64(t_nm_bin *bin)
+int	elftool_parse_shdr_64(elftool_t *bin)
 {
 	t_list *head;
-	t_nm_shdr64	shdr = {0};
+	shdr64_t	shdr = {0};
 	t_list		*new = NULL;
 	uint64_t	offset = bin->ehdr64->e_shoff;
 	int			symtabstrndx = -1;
@@ -278,12 +278,6 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 				if (shdr.shdr->sh_type == SHT_SYMTAB) {
 					symtabstrndx = shdr.shdr->sh_link;
 				}
-				//if (r == 0 && idx == bin->ehdr64->e_shstrndx) {
-				//	bin->shstrtab64 = ((t_nm_shdr64*)new->content);
-				//}
-				//if (r == 0 && shdr.shdr->sh_type == SHT_STRTAB) {
-				//	bin->strtab64 = ((t_nm_shdr64*)new->content);
-				//}
 				offset += bin->ehdr64->e_shentsize;
 				idx++;
 			}
@@ -296,13 +290,13 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 			head = bin->shdr;
 			while (head)
 			{
-				if (((t_nm_shdr64*)head->content)->shdr->sh_type == SHT_STRTAB)
+				if (((shdr64_t*)head->content)->shdr->sh_type == SHT_STRTAB)
 				{
-					if (bin->ehdr64->e_shstrndx == ((t_nm_shdr64*)head->content)->idx) {
-						bin->shstrtab64 = ((t_nm_shdr64*)head->content);
+					if (bin->ehdr64->e_shstrndx == ((shdr64_t*)head->content)->idx) {
+						bin->shstrtab64 = ((shdr64_t*)head->content);
 					}
-					if (symtabstrndx == ((t_nm_shdr64*)head->content)->idx) {
-						bin->strtab64 = ((t_nm_shdr64*)head->content);
+					if (symtabstrndx == ((shdr64_t*)head->content)->idx) {
+						bin->strtab64 = ((shdr64_t*)head->content);
 					}
 				}
 				head = head->next;
@@ -312,23 +306,23 @@ int	nm_bin_parse_shdr_64(t_nm_bin *bin)
 	return (r);
 }
 
-int	nm_bin_parse_shdr(t_nm_bin *bin)
+int	elftool_parse_shdr(elftool_t *bin)
 {
 	int r = 0;
 
 	if (bin->elfclass == ELFCLASS32) {
-		r = nm_bin_parse_shdr_32(bin);
+		r = elftool_parse_shdr_32(bin);
 	}
 	else {
-		r = nm_bin_parse_shdr_64(bin);
+		r = elftool_parse_shdr_64(bin);
 	}
 	return (r);
 }
 
-int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
+int		elftool_parse_syms64(elftool_t *bin, void *symtab)
 {
 	int r = 0;
-	t_nm_syms64	syms = {0};
+	syms64_t	syms = {0};
 	t_list		*new = NULL;
 	uint16_t	idx = 0;
 
@@ -362,12 +356,12 @@ int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
 			if (r == 0)
 			{
 				for (t_list *head = bin->shdr ; head->next ; head = head->next) {
-					if (((t_nm_shdr64*)head->content)->idx == syms.syms->st_shndx)
+					if (((shdr64_t*)head->content)->idx == syms.syms->st_shndx)
 					{
-						syms.shdr = ((t_nm_shdr64*)head->content)->shdr;
+						syms.shdr = ((shdr64_t*)head->content)->shdr;
 					}
 				}
-				new = ft_lstnew(&syms, sizeof(t_nm_syms64));
+				new = ft_lstnew(&syms, sizeof(syms64_t));
 				if (!new) {
 					_error(r, "malloc error");
 				} else {
@@ -379,10 +373,10 @@ int		nm_bin_parse_syms64(t_nm_bin *bin, void *symtab)
 	return (r);
 }
 
-int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
+int		elftool_parse_syms32(elftool_t *bin, void *symtab)
 {
 	int r = 0;
-	t_nm_syms32	syms = {0};
+	syms32_t	syms = {0};
 	t_list		*new = NULL;
 	uint16_t	idx = 0;
 
@@ -416,12 +410,12 @@ int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
 			if (r == 0)
 			{
 				for (t_list *head = bin->shdr ; head->next ; head = head->next) {
-					if (((t_nm_shdr32*)head->content)->idx == syms.syms->st_shndx)
+					if (((shdr32_t*)head->content)->idx == syms.syms->st_shndx)
 					{
-						syms.shdr = ((t_nm_shdr32*)head->content)->shdr;
+						syms.shdr = ((shdr32_t*)head->content)->shdr;
 					}
 				}
-				new = ft_lstnew(&syms, sizeof(t_nm_syms32));
+				new = ft_lstnew(&syms, sizeof(syms32_t));
 				if (!new) {
 					_error(r, "malloc error");
 				} else {
@@ -433,19 +427,19 @@ int		nm_bin_parse_syms32(t_nm_bin *bin, void *symtab)
 	return (r);
 }
 
-static int	nm_bin_get_sym_sections(t_nm_bin *bin, void **symtab)
+static int	elftool_get_sym_sections(elftool_t *bin, void **symtab)
 {
 	int r = 0;
 
 	for (t_list *head = bin->shdr ; head ; head = head->next) {
 		if (bin->elfclass == ELFCLASS32) {
-			if (head->content && ((t_nm_shdr32*)head->content)->shdr->sh_type == SHT_SYMTAB) {
-				*symtab = ((t_nm_shdr32*)head->content)->shdr;
+			if (head->content && ((shdr32_t*)head->content)->shdr->sh_type == SHT_SYMTAB) {
+				*symtab = ((shdr32_t*)head->content)->shdr;
 			}
 		}
 		else {
-			if (head->content && ((t_nm_shdr64*)head->content)->shdr->sh_type == SHT_SYMTAB) {
-				*symtab = ((t_nm_shdr64*)head->content)->shdr;
+			if (head->content && ((shdr64_t*)head->content)->shdr->sh_type == SHT_SYMTAB) {
+				*symtab = ((shdr64_t*)head->content)->shdr;
 			}
 		}
 	}
@@ -457,7 +451,7 @@ static int	nm_bin_get_sym_sections(t_nm_bin *bin, void **symtab)
 	return (r);
 }
 
-int	nm_bin_parse_syms(t_nm_bin *bin)
+int	elftool_parse_syms(elftool_t *bin)
 {
 	int r = 0;
 	void *symtab = NULL;
@@ -468,15 +462,35 @@ int	nm_bin_parse_syms(t_nm_bin *bin)
 	}
 	else
 	{
-		r = nm_bin_get_sym_sections(bin, &symtab);
+		r = elftool_get_sym_sections(bin, &symtab);
 		if (r == 0) {
 			if (bin->elfclass == ELFCLASS32) {
-				r = nm_bin_parse_syms32(bin, symtab);
+				r = elftool_parse_syms32(bin, symtab);
 			}
 			else {
-				r = nm_bin_parse_syms64(bin, symtab);
+				r = elftool_parse_syms64(bin, symtab);
 			}
 		}
 	}
 	return (r);
 }
+
+int	elftool_parse(elftool_t *bin)
+{
+	int r = 0;
+
+	if (r == 0) {
+		r = elftool_parse_ehdr(bin);
+	}
+	if (r == 0) {
+		r = elftool_parse_phdr(bin);
+	}
+	if (r == 0) {
+		r = elftool_parse_shdr(bin);
+	}
+	if (r == 0) {
+		r = elftool_parse_syms(bin);
+	}
+	return (r);
+}
+
