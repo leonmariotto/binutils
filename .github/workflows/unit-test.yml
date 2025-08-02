@@ -35,4 +35,5 @@ jobs:
       uses: codecov/codecov-action@v4
       with:
         files: unit_test_report/coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
     
