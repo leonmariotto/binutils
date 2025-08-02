@@ -12,15 +12,14 @@
 
 #include "elftool.h"
 
-int		main(int ac, char **av)
-{
-	int		r;
-	elftool_opt_t	opt = {0};
+int main(int ac, char **av) {
+  int r;
+  elftool_opt_t opt = {0};
 
-	r = elftool_getopt(ac, av, &opt);
-//	nm_printopt(&opt);
-	if (r == 0) {
-		r = elftool(&opt);
-	}
-	return (r);
+  r = elftool_getopt(ac, av, &opt);
+  //	nm_printopt(&opt);
+  if (r == 0) {
+    r = elftool(&opt);
+  }
+  return (r);
 }

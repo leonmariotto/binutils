@@ -1,12 +1,12 @@
 #ifndef ELFTOOL_H
 #define ELFTOOL_H
 
-#include "liblst.h"
 #include "elftool_getopt.h"
+#include "liblst.h"
 
 // stat
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 // open
@@ -23,14 +23,15 @@
 #include "elftool_structs.h"
 
 // __BYTE_ORDER == __LITTLE_ENDIAN and bswap/hton
-#include <endian.h>
-#include <byteswap.h>
 #include <arpa/inet.h>
+#include <byteswap.h>
+#include <endian.h>
 
-#define _error(r, str) do {\
-	fprintf(stderr, "[ERROR] %s\n", str);\
-    r = EFAULT; \
-} while (0)
+#define _error(r, str)                                                         \
+  do {                                                                         \
+    fprintf(stderr, "[ERROR] %s\n", str);                                      \
+    r = EFAULT;                                                                \
+  } while (0)
 
 #define _swap16(x) (bin->endian == ELFDATA2MSB ? htons(x) : x)
 #define _swap32(x) (bin->endian == ELFDATA2MSB ? htonl(x) : x)
@@ -42,7 +43,6 @@
 #define _swap64(x) (bin->endian == ELFDATA2MSB ? x : bswap_64(x))
 #endif
 
-int		elftool(elftool_opt_t *opt);
+int elftool(elftool_opt_t *opt);
 
 #endif
-

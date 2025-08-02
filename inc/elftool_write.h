@@ -3,7 +3,6 @@
 
 #include "elftool_structs.h"
 
-int	elftool_write(elftool_t *bin, char *file_out);
+int elftool_write(elftool_t *bin, char *file_out);
 
 #endif
-
