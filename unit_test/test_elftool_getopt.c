@@ -1,14 +1,14 @@
 #include <stdio.h>
 
-#include "cmocka.h"
-#include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <setjmp.h>
 #include <stdint.h>
+#include "cmocka.h"
 
-#include "elftool_getopt.h"
 #include <elf.h>
+#include "elftool_getopt.h"
 
 static void test_elftool_getopt(void **state) {
   (void)state;

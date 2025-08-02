@@ -1,14 +1,14 @@
 #include <stdio.h>
 
-#include "cmocka.h"
-#include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <setjmp.h>
 #include <stdint.h>
+#include "cmocka.h"
 
-#include "elftool_parse.h"
 #include <elf.h>
+#include "elftool_parse.h"
 
 static void test_elftool_parse64_ehdr(void **state) {
   (void)state;
