@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: unit-test
 
 on:
   push:
@@ -20,17 +20,19 @@ jobs:
     
     - name: Install dependency
       run: |
-        sudo apt install cppcheck
+        sudo apt install graphviz gcovr
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.x'  # Change to your preferred version
 
-    - name: Install uv
+    - name: Run unit-test
       run: |
-        curl -Ls https://astral.sh/uv/install.sh | bash
-        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        ./run_unit_test.py
+
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: unit_test_report/coverage.xml
     
-    - name: make
-      run: make

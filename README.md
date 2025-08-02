@@ -1,5 +1,7 @@
 # binutils
 
+[![codecov](https://codecov.io/gh/leonmariotto/binutils/branch/main/graph/badge.svg)](https://codecov.io/gh/leonmariotto/binutils)
+
 ## Whatsup
 
 There is some submodule in there, so run:
