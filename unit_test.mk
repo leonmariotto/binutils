@@ -45,7 +45,7 @@ all: obj bin run coverage
 bin: $(BIN_NAME)
 obj: $(OBJ)
 run: $(UNIT_GCDAFILE) $(JUNIT_REPORT)
-coverage: $(BUILD_DIR)/report/html/coverage.html
+coverage: $(BUILD_DIR)/report/html/coverage.html $(BUILD_DIR)/report/coverage.json
 
 $(BIN_NAME): $(OBJ)
 	@mkdir -p $(dir $@)
@@ -62,6 +62,10 @@ $(JUNIT_REPORT) $(UNIT_GCDAFILE)&: $(BIN_NAME)
 $(BUILD_DIR)/report/html/coverage.html: $(UNIT_GCDAFILE)
 	@mkdir -p $(dir $@)
 	gcovr --object-directory $(OBJ_DIR) -r .  --html --html-details -o $@ --filter "$(UNIT_SRC)"
+
+$(BUILD_DIR)/report/coverage.json: $(UNIT_GCDAFILE)
+	@mkdir -p $(dir $@)
+	gcovr --object-directory $(OBJ_DIR) -r .  --json -o $@ --filter "$(UNIT_SRC)"
 
 clean:
 	rm -rf $(BUILD_DIR)
