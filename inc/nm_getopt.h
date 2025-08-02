@@ -28,5 +28,6 @@ typedef struct		s_nm_opt {
 
 
 void	nm_printopt(t_nm_opt *opt);
+int	nm_getopt(int ac, char **av, t_nm_opt *opt);
 
 #endif
