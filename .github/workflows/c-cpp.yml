@@ -20,7 +20,7 @@ jobs:
     
     - name: Install dependency
       run: |
-        sudo apt install cppcheck
+        sudo apt install cppcheck graphviz
 
     - name: Set up Python
       uses: actions/setup-python@v4
