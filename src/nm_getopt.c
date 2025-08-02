@@ -142,7 +142,6 @@ int	nm_getopt(int ac, char **av, t_nm_opt *opt)
 	int 	r = 0;
 	bool	b = true;
 
-	opt->nm = true;
 	while (b == true && r == 0 && i < ac)
 	{
 		b = false;
