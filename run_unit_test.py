@@ -9,7 +9,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
 )
 
-unit_list = ["elftool_parse", "elftool_getopt", "elftool_dump"]
+unit_list = ["elftool_parse", "elftool_getopt", "elftool_dump", "elftool_write", "elftool_transform"]
 
 def unit_test_run():
     for unit in unit_list:
