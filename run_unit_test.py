@@ -4,6 +4,11 @@ import logging
 import subprocess
 import os
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
+)
+
 unit_list = ["elftool_parse", "elftool_getopt", "elftool_dump"]
 
 def unit_test_run():
