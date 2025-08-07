@@ -94,21 +94,23 @@ static int sort_symbols64(elftool_t *bin) {
 
   // remove the first indice
   ft_lstdelone(&bin->syms, default_del);
-  while (ELF64_ST_TYPE(((syms64_t *)bin->syms->content)->syms->st_info) ==
+  while (bin->syms && (ELF64_ST_TYPE(((syms64_t *)bin->syms->content)->syms->st_info) ==
              STT_SECTION ||
          ELF64_ST_TYPE(((syms64_t *)bin->syms->content)->syms->st_info) ==
-             STT_FILE) {
+             STT_FILE)) {
     ft_lstdelone(&bin->syms, default_del);
   }
   head = bin->syms;
-  while (head->next) {
-    if (ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
-            STT_SECTION ||
-        ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
-            STT_FILE) {
-      ft_lstdelone(&head->next, default_del);
+  if (head) {
+    while (head->next) {
+      if (ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
+              STT_SECTION ||
+          ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
+              STT_FILE) {
+        ft_lstdelone(&head->next, default_del);
+      }
+      head = head->next;
     }
-    head = head->next;
   }
   while (bin->syms) {
     new = NULL;
@@ -117,10 +119,12 @@ static int sort_symbols64(elftool_t *bin) {
     index = 0;
     min = (char *)ff;
     while (head) {
+      fprintf(stderr, "sort_symbols64: head=%p\n", head);
       cur = (char *)&((syms64_t *)head->content)
                 ->bin->mem[((syms64_t *)head->content)
                                ->bin->strtab64->shdr->sh_offset +
                            ((syms64_t *)head->content)->syms->st_name];
+      fprintf(stderr, "sort_symbols64: cur=%s\n", cur);
       if (strcmp_nm(min, cur) > 0) {
         min = cur;
         indexSelected = index;
@@ -175,21 +179,23 @@ static int sort_symbols32(elftool_t *bin) {
 
   // remove the first indice
   ft_lstdelone(&bin->syms, default_del);
-  while (ELF32_ST_TYPE(((syms32_t *)bin->syms->content)->syms->st_info) ==
+  while (bin->syms && (ELF32_ST_TYPE(((syms32_t *)bin->syms->content)->syms->st_info) ==
              STT_SECTION ||
          ELF32_ST_TYPE(((syms32_t *)bin->syms->content)->syms->st_info) ==
-             STT_FILE) {
+             STT_FILE)) {
     ft_lstdelone(&bin->syms, default_del);
   }
   head = bin->syms;
-  while (head->next) {
-    if (ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
-            STT_SECTION ||
-        ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
-            STT_FILE) {
-      ft_lstdelone(&head->next, default_del);
+  if (head) {
+    while (head->next) {
+      if (ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
+              STT_SECTION ||
+          ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
+              STT_FILE) {
+        ft_lstdelone(&head->next, default_del);
+      }
+      head = head->next;
     }
-    head = head->next;
   }
   while (bin->syms) {
     new = NULL;

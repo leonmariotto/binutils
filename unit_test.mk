@@ -27,6 +27,10 @@ SRC := \
 	$(UNIT_TEST_SRC)\
 	$(CMOCKA_PATH)/src/cmocka.c
 
+ifneq (,$(findstring elftool_dump,$(UNIT_NAME)))
+SRC += src/elftool_parse.c
+endif
+
 INCDIR := $(UNIT_INC_PATH) \
 	$(CMOCKA_PATH)/include
 
@@ -58,6 +62,7 @@ $(OBJ_DIR)/%.o: %.c
 $(JUNIT_REPORT) $(UNIT_GCDAFILE)&: $(BIN_NAME)
 	@mkdir -p $(dir $(JUNIT_REPORT))
 	$(BIN_NAME) > $(JUNIT_REPORT)
+
 
 $(BUILD_DIR)/report/html/coverage.html: $(UNIT_GCDAFILE)
 	@mkdir -p $(dir $@)
