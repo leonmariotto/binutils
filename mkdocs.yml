@@ -1,0 +1,5 @@
+site_name: Image Process
+theme:
+  name: material
+  palette:
+    scheme: slate
