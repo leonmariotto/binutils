@@ -13,13 +13,13 @@
 #include "liblst.h"
 #include <string.h>
 
-t_list	*ft_lstnew_nodup(void *content, size_t content_size)
+list_t	*ft_lstnew_nodup(void *content, size_t content_size)
 {
-	t_list *list;
+	list_t *list;
 
-	if (!(list = (t_list *)malloc(sizeof(t_list))))
+	if (!(list = (list_t *)malloc(sizeof(list_t))))
 		return (NULL);
-	bzero(list, sizeof(t_list));
+	bzero(list, sizeof(list_t));
 	if (content && content_size > 0)
 	{
 		list->content = content;

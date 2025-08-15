@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-t_list	*ft_lstback(t_list *lst)
+list_t	*ft_lstback(list_t *lst)
 {
 	while (lst->next)
 		lst = lst->next;

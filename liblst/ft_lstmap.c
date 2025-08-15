@@ -13,17 +13,17 @@
 #include "liblst.h"
 #include <string.h>
 
-t_list	*ft_lstmap(t_list *lst, t_list *(*f)(t_list *elem))
+list_t	*ft_lstmap(list_t *lst, list_t *(*f)(list_t *elem))
 {
 	void	*next;
-	t_list	*list;
+	list_t	*list;
 
 	if (lst == NULL || f == NULL)
 		return (NULL);
 	next = lst->next;
-	if (!(list = (t_list*)malloc(sizeof(t_list))))
+	if (!(list = (list_t*)malloc(sizeof(list_t))))
 		return (0);
-	memcpy(list, f(lst), sizeof(t_list));
+	memcpy(list, f(lst), sizeof(list_t));
 	if (next != 0)
 		list->next = ft_lstmap(next, f);
 	return (list);

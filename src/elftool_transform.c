@@ -49,7 +49,7 @@ int extract_last_ptload_infos(elftool_t *bin, uint64_t *vaddr, uint64_t *fileoff
   phdr64_t *last_ptload = NULL;
   int r = 0;
 
-  for (t_list *head = bin->phdr; head; head = head->next) {
+  for (list_t *head = bin->phdr; head; head = head->next) {
     if (((phdr64_t *)head->content)->phdr->p_type == PT_LOAD &&
         (!last_ptload || last_ptload->phdr->p_vaddr <
                              ((phdr64_t *)head->content)->phdr->p_vaddr)) {
@@ -79,7 +79,7 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
 
   fprintf(stderr, "%s:%d\n", __func__, __LINE__);
   /* Find last PT_LOAD */
-  for (t_list *head = bin->phdr; head; head = head->next) {
+  for (list_t *head = bin->phdr; head; head = head->next) {
     if (((phdr64_t *)head->content)->phdr->p_type == PT_LOAD &&
         (!last_ptload || last_ptload->phdr->p_vaddr <
                              ((phdr64_t *)head->content)->phdr->p_vaddr)) {
@@ -91,7 +91,7 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
   } else {
     fprintf(stderr, "%s:%d\n", __func__, __LINE__);
     /* Find last section for this segment */
-    for (t_list *head = bin->shdr; head; head = head->next) {
+    for (list_t *head = bin->shdr; head; head = head->next) {
       if (((shdr64_t *)head->content)->shdr->sh_offset >
               last_ptload->phdr->p_offset &&
           ((shdr64_t *)head->content)->shdr->sh_offset <
@@ -129,7 +129,7 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
       new_shdr_entry.mem = transform->code;
       new_shdr_entry.idx = last_shdr->idx + 1;
       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-      for (t_list *head = bin->shdr; head && r == 0; head = head->next) {
+      for (list_t *head = bin->shdr; head && r == 0; head = head->next) {
         /* Increase next idx */
         if (head->content &&
             ((shdr64_t *)head->content)->idx > last_shdr->idx) {
@@ -145,9 +145,9 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
       }
       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
       /* Add the new section in the section list */
-      for (t_list *head = bin->shdr; head && r == 0; head = head->next) {
+      for (list_t *head = bin->shdr; head && r == 0; head = head->next) {
         if (((shdr64_t *)head->content)->idx == last_shdr->idx) {
-          t_list *new = ft_lstnew(&new_shdr_entry, sizeof(new_shdr_entry));
+          list_t *new = ft_lstnew(&new_shdr_entry, sizeof(new_shdr_entry));
           if (!new) {
             r = -1;
           } else {
@@ -168,7 +168,7 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
       /* Update size and offset in phdr table */
       last_ptload->phdr->p_filesz += code_len_aligned;
       last_ptload->phdr->p_memsz += code_len_aligned;
-      for (t_list *head = bin->phdr; head; head = head->next) {
+      for (list_t *head = bin->phdr; head; head = head->next) {
         if (((phdr64_t *)head->content)->phdr->p_offset >
             last_ptload->phdr->p_offset +
                 (last_ptload->phdr->p_filesz - code_len_aligned)) {

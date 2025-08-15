@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-t_list	*ft_lstget(t_list *lst, const size_t index)
+list_t	*ft_lstget(list_t *lst, const size_t index)
 {
 	size_t i;
 

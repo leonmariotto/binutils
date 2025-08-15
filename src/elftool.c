@@ -86,7 +86,7 @@ void elftool_clean(elftool_opt_t *opt) {
 }
 
 int elftool(elftool_opt_t *opt) {
-  t_list *head;
+  list_t *head;
   int r = 0;
   bool printName = false;
   elftool_t bin = {0};

@@ -84,7 +84,7 @@ static void test_transform_section_injection_64(void **state) {
     assert_int_equal(bin.ehdr64->e_shnum, 3);
 
     // find the injected section
-    t_list* head = bin.shdr;
+    list_t* head = bin.shdr;
     int found = 0;
     while(head) {
         shdr64_t* current_shdr = (shdr64_t*)head->content;

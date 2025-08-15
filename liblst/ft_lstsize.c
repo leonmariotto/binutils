@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-size_t	ft_lstsize(const t_list *lst)
+size_t	ft_lstsize(const list_t *lst)
 {
 	size_t i;
 

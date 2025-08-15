@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-void	ft_lstiter(t_list *lst, void (*f)(t_list *elem))
+void	ft_lstiter(list_t *lst, void (*f)(list_t *elem))
 {
 	void *next;
 

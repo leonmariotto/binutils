@@ -12,10 +12,10 @@
 
 #include "liblst.h"
 
-void				ft_lstswap(t_list *l0, t_list **l1, t_list **l2)
+void				ft_lstswap(list_t *l0, list_t **l1, list_t **l2)
 {
-	t_list 	*tmp1;
-	t_list	*save;
+	list_t 	*tmp1;
+	list_t	*save;
 
 	tmp1 = *l1;
 	*l1 = *l2;

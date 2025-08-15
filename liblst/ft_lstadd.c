@@ -12,9 +12,9 @@
 
 #include "liblst.h"
 
-void	ft_lstadd(t_list **alst, t_list *new)
+void	ft_lstadd(list_t **alst, list_t *new)
 {
-	t_list	*next;
+	list_t	*next;
 
 	if (alst == NULL)
 		return ;

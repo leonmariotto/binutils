@@ -10,17 +10,17 @@
 #define NM_ARCH_M32 2
 
 typedef struct elftool_opt_s {
-  bool config;
-  bool ehdr;
-  bool phdr;
-  bool shdr;
-  bool syms;
-  bool hexdump;
-  bool nm;
-  bool out;
-  bool test;
-  char *outfile;
-  t_list *bins;
+    bool config;
+    bool ehdr;
+    bool phdr;
+    bool shdr;
+    bool syms;
+    bool hexdump;
+    bool nm;
+    bool out;
+    bool test;
+    char *outfile;
+    list_t *bins;
 } elftool_opt_t;
 
 void elftool_printopt(elftool_opt_t *opt);

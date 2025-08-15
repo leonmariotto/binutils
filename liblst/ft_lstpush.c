@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-void	ft_lstpush(t_list **lst, t_list *new)
+void	ft_lstpush(list_t **lst, list_t *new)
 {
 	if (lst == NULL)
 		return ;

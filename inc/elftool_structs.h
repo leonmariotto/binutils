@@ -4,7 +4,7 @@
 // Elf
 #include <elf.h>
 
-// t_list
+// list_t
 #include "liblst.h"
 
 typedef struct elftool_s elftool_t;
@@ -60,9 +60,9 @@ typedef struct elftool_s {
     uint8_t endian;
     Elf64_Ehdr *ehdr64;
     Elf32_Ehdr *ehdr32;
-    t_list *phdr;
-    t_list *shdr;
-    t_list *syms;
+    list_t *phdr;
+    list_t *shdr;
+    list_t *syms;
     shdr32_t *shstrtab32;
     shdr64_t *shstrtab64;
     shdr32_t *strtab32;

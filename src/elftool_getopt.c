@@ -148,7 +148,7 @@ int elftool_getopt(int ac, char **av, elftool_opt_t *opt) {
 }
 
 void elftool_printopt(elftool_opt_t *opt) {
-  t_list *head = opt->bins;
+  list_t *head = opt->bins;
 
   printf("elf-header=%d\n", opt->ehdr);
   printf("program-header=%d\n", opt->phdr);

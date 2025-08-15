@@ -12,9 +12,9 @@
 
 #include "liblst.h"
 
-void		ft_lstrev(t_list **lst)
+void		ft_lstrev(list_t **lst)
 {
-	t_list *l;
+	list_t *l;
 
 	if (!lst)
 		return ;

@@ -12,7 +12,7 @@
 
 #include "liblst.h"
 
-void	ft_lstdel(t_list **alst, void (*del)(void*, size_t))
+void	ft_lstdel(list_t **alst, void (*del)(void*, size_t))
 {
 	if (alst == NULL || *alst == NULL || del == NULL)
 		return ;
