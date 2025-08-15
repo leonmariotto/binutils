@@ -122,6 +122,7 @@ int elftool_parse_phdr_32(elftool_t *bin) {
     phdr.idx = idx;
     phdr.phdr = ((Elf32_Phdr *)&bin->mem[offset]);
     phdr.bin = bin;
+    phdr.mem = &bin->mem[phdr.phdr->p_offset];
     new = ft_lstnew(&phdr, sizeof(phdr));
     if (!new) {
       _error(r, "malloc error");
@@ -147,6 +148,7 @@ int elftool_parse_phdr_64(elftool_t *bin) {
     phdr.idx = idx;
     phdr.phdr = ((Elf64_Phdr *)&bin->mem[offset]);
     phdr.bin = bin;
+    phdr.mem = &bin->mem[phdr.phdr->p_offset];
     new = ft_lstnew(&phdr, sizeof(phdr));
     if (!new) {
       _error(r, "malloc error");

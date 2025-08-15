@@ -1,31 +1,35 @@
 #include "elftool.h"
 
-// TODO use fseek to replace ptr in file
-// woody allow the use of fpusts, fflush, lseek
-// or use an allocated space and one write, that's better but we don't know the
-// size
+// TODO copy symbols table and section table
 void elftool_write64(elftool_t *bin, int fd) {
   if (bin) {
-    write(fd, bin->ehdr64, 0x40);
+    write(fd, bin->ehdr64, 0x40); // Copy ELF header.
+    /* Copy phdr table */
     lseek(fd, bin->ehdr64->e_phoff, SEEK_SET);
     for (t_list *head = bin->phdr; head; head = head->next) {
       if (head->content) {
         write(fd, ((phdr64_t *)head->content)->phdr, bin->ehdr64->e_phentsize);
       }
     }
-    for (t_list *head = bin->shdr; head; head = head->next) {
+    for (t_list *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        lseek(fd, ((shdr64_t *)head->content)->shdr->sh_offset, SEEK_SET);
-        write(fd, ((shdr64_t *)head->content)->mem,
-              ((shdr64_t *)head->content)->shdr->sh_size);
+        lseek(fd, ((phdr64_t *)head->content)->phdr->p_offset, SEEK_SET);
+        write(fd, ((phdr64_t *)head->content)->mem, ((phdr64_t *)head->content)->phdr->p_filesz);
       }
     }
-    lseek(fd, bin->ehdr64->e_shoff, SEEK_SET);
-    for (t_list *head = bin->shdr; head; head = head->next) {
-      if (head->content) {
-        write(fd, ((shdr64_t *)head->content)->shdr, bin->ehdr64->e_shentsize);
-      }
-    }
+    //for (t_list *head = bin->shdr; head; head = head->next) {
+    //  if (head->content) {
+    //    lseek(fd, ((shdr64_t *)head->content)->shdr->sh_offset, SEEK_SET);
+    //    write(fd, ((shdr64_t *)head->content)->mem,
+    //          ((shdr64_t *)head->content)->shdr->sh_size);
+    //  }
+    //}
+    //lseek(fd, bin->ehdr64->e_shoff, SEEK_SET);
+    //for (t_list *head = bin->shdr; head; head = head->next) {
+    //  if (head->content) {
+    //    write(fd, ((shdr64_t *)head->content)->shdr, bin->ehdr64->e_shentsize);
+    //  }
+    //}
   }
 }
 void elftool_write32(elftool_t *bin, int fd) {
@@ -37,19 +41,25 @@ void elftool_write32(elftool_t *bin, int fd) {
         write(fd, ((phdr32_t *)head->content)->phdr, bin->ehdr32->e_phentsize);
       }
     }
-    for (t_list *head = bin->shdr; head; head = head->next) {
+    for (t_list *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        lseek(fd, ((shdr32_t *)head->content)->shdr->sh_offset, SEEK_SET);
-        write(fd, ((shdr32_t *)head->content)->mem,
-              ((shdr32_t *)head->content)->shdr->sh_size);
+        lseek(fd, ((phdr32_t *)head->content)->phdr->p_offset, SEEK_SET);
+        write(fd, ((phdr32_t *)head->content)->mem, ((phdr32_t *)head->content)->phdr->p_filesz);
       }
     }
-    lseek(fd, bin->ehdr32->e_shoff, SEEK_SET);
-    for (t_list *head = bin->shdr; head; head = head->next) {
-      if (head->content) {
-        write(fd, ((shdr32_t *)head->content)->shdr, bin->ehdr32->e_shentsize);
-      }
-    }
+    // for (t_list *head = bin->shdr; head; head = head->next) {
+    //   if (head->content) {
+    //     lseek(fd, ((shdr32_t *)head->content)->shdr->sh_offset, SEEK_SET);
+    //     write(fd, ((shdr32_t *)head->content)->mem,
+    //           ((shdr32_t *)head->content)->shdr->sh_size);
+    //   }
+    // }
+    // lseek(fd, bin->ehdr32->e_shoff, SEEK_SET);
+    // for (t_list *head = bin->shdr; head; head = head->next) {
+    //   if (head->content) {
+    //     write(fd, ((shdr32_t *)head->content)->shdr, bin->ehdr32->e_shentsize);
+    //   }
+    // }
   }
 }
 

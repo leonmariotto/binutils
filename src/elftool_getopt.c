@@ -37,10 +37,6 @@ static char *flags_help[] = {
 static int elftool_getopt_outfile(elftool_opt_t *opt, char *arg) {
   int r = 0;
 
-  (void)opt;
-  (void)arg;
-  return (r);
-  /* Opt disactived for nm */
   opt->out = true;
   if (arg) {
     opt->outfile = arg;

@@ -2,6 +2,8 @@
 #include "elftool.h"
 #include <string.h>
 
+// TODO LMA: should create a new PT_LOAD with section injection.
+
 int nm_bin_transform(elftool_t *bin, elftool_transform_t *transform) {
   int r = 0;
 
@@ -31,7 +33,41 @@ int nm_bin_transform_codecave_injection(elftool_t *bin,
   return (r);
 }
 
-int inject_shdr64(elftool_t *bin, elftool_transform_t *transform) {
+/*
+ * @brief extract info from last PT_LOAD
+ *
+ * vaddr is filled with the next virtual addr available in binary (at runtime)
+ * after .bss section.
+ * fileoff is filled with the next available offset for writting section content.
+ * TODO: fileoff is unecessary, only need to append data to file (fileoff == file size)
+ *
+ * @return  0 on succes
+ *          -1 on error
+ * */
+int extract_last_ptload_infos(elftool_t *bin, uint64_t *vaddr, uint64_t *fileoff)
+{
+  phdr64_t *last_ptload = NULL;
+  int r = 0;
+
+  for (t_list *head = bin->phdr; head; head = head->next) {
+    if (((phdr64_t *)head->content)->phdr->p_type == PT_LOAD &&
+        (!last_ptload || last_ptload->phdr->p_vaddr <
+                             ((phdr64_t *)head->content)->phdr->p_vaddr)) {
+      last_ptload = (phdr64_t *)head->content;
+    }
+  }
+  if (!last_ptload) {
+      r = -1;
+  }
+  else {
+      *vaddr = last_ptload->phdr->p_offset + last_ptload->phdr->p_memsz;
+      *fileoff = last_ptload->phdr->p_offset + last_ptload->phdr->p_filesz;
+  }
+  return (r);
+}
+
+int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
+{
   int r = 0;
   uint64_t code_len_aligned = transform->code_len % 4096 == 0
                                   ? transform->code_len

@@ -15,6 +15,7 @@ int elftool_injection(elftool_opt_t *opt, elftool_t *bin) {
   int r = 0;
 
   if (opt->out) {
+    printf("Running injection\n");
     // elftool_t_transform transform = {0};
     // transform.code = malloc(333);
     // transform.code_len = 333;
@@ -42,7 +43,7 @@ int elftool_load(elftool_t *bin, char *bin_path) {
   int fd;
   int r = 0;
 
-  if ((fd = open(bin->path, O_RDONLY)) <= 0) {
+  if ((fd = open(bin_path, O_RDONLY)) <= 0) {
     r = EINVAL;
     fprintf(stderr, "open failed");
   }
