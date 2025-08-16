@@ -9,62 +9,62 @@ void elftool_dump_ehdr(elftool_t *bin) {
   printf("===== ELF HEADER\n");
   if (bin->elfclass == ELFCLASS32) {
     printf("Magic number and other info = %x %x %x %x\n",
-           ((Elf32_Ehdr *)bin->mem)->e_ident[0],
-           ((Elf32_Ehdr *)bin->mem)->e_ident[1],
-           ((Elf32_Ehdr *)bin->mem)->e_ident[2],
-           ((Elf32_Ehdr *)bin->mem)->e_ident[3]);
-    printf("Object file type = %hx\n", ((Elf32_Ehdr *)bin->mem)->e_type);
-    printf("Architecture = %hx\n", ((Elf32_Ehdr *)bin->mem)->e_machine);
-    printf("Object file version = %x\n", ((Elf32_Ehdr *)bin->mem)->e_version);
+           get_ehdr32(bin)->e_ident[0],
+           get_ehdr32(bin)->e_ident[1],
+           get_ehdr32(bin)->e_ident[2],
+           get_ehdr32(bin)->e_ident[3]);
+    printf("Object file type = %hx\n", get_ehdr32(bin)->e_type);
+    printf("Architecture = %hx\n", get_ehdr32(bin)->e_machine);
+    printf("Object file version = %x\n", get_ehdr32(bin)->e_version);
     printf("Entry point virtual address = %x\n",
-           ((Elf32_Ehdr *)bin->mem)->e_entry);
+           get_ehdr32(bin)->e_entry);
     printf("Program header table file offset = %x\n",
-           ((Elf32_Ehdr *)bin->mem)->e_phoff);
+           get_ehdr32(bin)->e_phoff);
     printf("Section header table file offset = %x\n",
-           ((Elf32_Ehdr *)bin->mem)->e_shoff);
+           get_ehdr32(bin)->e_shoff);
     printf("Processor-specific flags = %x\n",
-           ((Elf32_Ehdr *)bin->mem)->e_flags);
+           get_ehdr32(bin)->e_flags);
     printf("ELF header size in bytes = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_ehsize);
+           get_ehdr32(bin)->e_ehsize);
     printf("Program header table entry size = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_phentsize);
+           get_ehdr32(bin)->e_phentsize);
     printf("Program header table entry count = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_phnum);
+           get_ehdr32(bin)->e_phnum);
     printf("Section header table entry size = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_shentsize);
+           get_ehdr32(bin)->e_shentsize);
     printf("Section header table entry count = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_shnum);
+           get_ehdr32(bin)->e_shnum);
     printf("Section header string table index = %hx\n",
-           ((Elf32_Ehdr *)bin->mem)->e_shstrndx);
+           get_ehdr32(bin)->e_shstrndx);
   } else {
     printf("Magic number and other info = %x %x %x %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_ident[0],
-           ((Elf64_Ehdr *)bin->mem)->e_ident[1],
-           ((Elf64_Ehdr *)bin->mem)->e_ident[2],
-           ((Elf64_Ehdr *)bin->mem)->e_ident[3]);
-    printf("Object file type = %hx\n", ((Elf64_Ehdr *)bin->mem)->e_type);
-    printf("Architecture = %hx\n", ((Elf64_Ehdr *)bin->mem)->e_machine);
-    printf("Object file version = %x\n", ((Elf64_Ehdr *)bin->mem)->e_version);
+           get_ehdr64(bin)->e_ident[0],
+           get_ehdr64(bin)->e_ident[1],
+           get_ehdr64(bin)->e_ident[2],
+           get_ehdr64(bin)->e_ident[3]);
+    printf("Object file type = %hx\n", get_ehdr64(bin)->e_type);
+    printf("Architecture = %hx\n", get_ehdr64(bin)->e_machine);
+    printf("Object file version = %x\n", get_ehdr64(bin)->e_version);
     printf("Entry point virtual address = %lx\n",
-           ((Elf64_Ehdr *)bin->mem)->e_entry);
+           get_ehdr64(bin)->e_entry);
     printf("Program header table file offset = %lx\n",
-           ((Elf64_Ehdr *)bin->mem)->e_phoff);
+           get_ehdr64(bin)->e_phoff);
     printf("Section header table file offset = %lx\n",
-           ((Elf64_Ehdr *)bin->mem)->e_shoff);
+           get_ehdr64(bin)->e_shoff);
     printf("Processor-specific flags = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_flags);
+           get_ehdr64(bin)->e_flags);
     printf("ELF header size in bytes = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_ehsize);
+           get_ehdr64(bin)->e_ehsize);
     printf("Program header table entry size = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_phentsize);
+           get_ehdr64(bin)->e_phentsize);
     printf("Program header table entry count = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_phnum);
+           get_ehdr64(bin)->e_phnum);
     printf("Section header table entry size = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_shentsize);
+           get_ehdr64(bin)->e_shentsize);
     printf("Section header table entry count = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_shnum);
+           get_ehdr64(bin)->e_shnum);
     printf("Section header string table index = %x\n",
-           ((Elf64_Ehdr *)bin->mem)->e_shstrndx);
+           get_ehdr64(bin)->e_shstrndx);
   }
   printf("\n");
 }
@@ -94,18 +94,18 @@ static int sort_symbols64(elftool_t *bin) {
 
   // remove the first indice
   ft_lstdelone(&bin->syms, default_del);
-  while (bin->syms && (ELF64_ST_TYPE(((syms64_t *)bin->syms->content)->syms->st_info) ==
+  while (bin->syms && (ELF64_ST_TYPE(get_sym64_ent(bin->syms->content)->st_info) ==
              STT_SECTION ||
-         ELF64_ST_TYPE(((syms64_t *)bin->syms->content)->syms->st_info) ==
+         ELF64_ST_TYPE(get_sym64_ent(bin->syms->content)->st_info) ==
              STT_FILE)) {
     ft_lstdelone(&bin->syms, default_del);
   }
   head = bin->syms;
   if (head) {
     while (head->next) {
-      if (ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
+      if (ELF64_ST_TYPE(get_sym64_ent(head->next->content)->st_info) ==
               STT_SECTION ||
-          ELF64_ST_TYPE(((syms64_t *)head->next->content)->syms->st_info) ==
+          ELF64_ST_TYPE(get_sym64_ent(head->next->content)->st_info) ==
               STT_FILE) {
         ft_lstdelone(&head->next, default_del);
       }
@@ -120,10 +120,8 @@ static int sort_symbols64(elftool_t *bin) {
     min = (char *)ff;
     while (head) {
       fprintf(stderr, "sort_symbols64: head=%p\n", head);
-      cur = (char *)&((syms64_t *)head->content)
-                ->bin->mem[((syms64_t *)head->content)
-                               ->bin->strtab64->shdr->sh_offset +
-                           ((syms64_t *)head->content)->syms->st_name];
+      cur = (char *)&bin->mem[get_shdr64_ent(bin->strtab64)->sh_offset +
+                           get_sym64_ent(head->content)->st_name];
       fprintf(stderr, "sort_symbols64: cur=%s\n", cur);
       if (strcmp_nm(min, cur) > 0) {
         min = cur;
@@ -179,18 +177,18 @@ static int sort_symbols32(elftool_t *bin) {
 
   // remove the first indice
   ft_lstdelone(&bin->syms, default_del);
-  while (bin->syms && (ELF32_ST_TYPE(((syms32_t *)bin->syms->content)->syms->st_info) ==
+  while (bin->syms && (ELF32_ST_TYPE(get_sym32_ent(bin->syms->content)->st_info) ==
              STT_SECTION ||
-         ELF32_ST_TYPE(((syms32_t *)bin->syms->content)->syms->st_info) ==
+         ELF32_ST_TYPE(get_sym32_ent(bin->syms->content)->st_info) ==
              STT_FILE)) {
     ft_lstdelone(&bin->syms, default_del);
   }
   head = bin->syms;
   if (head) {
     while (head->next) {
-      if (ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
+      if (ELF32_ST_TYPE(get_sym32_ent(head->next->content)->st_info) ==
               STT_SECTION ||
-          ELF32_ST_TYPE(((syms32_t *)head->next->content)->syms->st_info) ==
+          ELF32_ST_TYPE(get_sym32_ent(head->next->content)->st_info) ==
               STT_FILE) {
         ft_lstdelone(&head->next, default_del);
       }
@@ -204,12 +202,10 @@ static int sort_symbols32(elftool_t *bin) {
     index = 0;
     min = (char *)ff;
     while (head) {
-      cur = (char *)&((syms32_t *)head->content)
-                ->bin->mem[((syms32_t *)head->content)
-                               ->bin->strtab32->shdr->sh_offset +
-                           ((syms32_t *)head->content)->syms->st_name];
-      // fprintf(stderr, "cur={%s} min={%s} st_name=%d\n", cur, min,
-      // ((syms32_t*)head->content)->syms->st_name);
+      fprintf(stderr, "sort_symbols32: head=%p\n", head);
+      cur = (char *)&bin->mem[get_shdr32_ent(bin->strtab32)->sh_offset +
+                           get_sym32_ent(head->content)->st_name];
+      fprintf(stderr, "sort_symbols32: cur=%s\n", cur);
       if (strcmp_nm(min, cur) > 0) {
         min = cur;
         indexSelected = index;
@@ -313,9 +309,9 @@ static char nm_flag_magic(uint8_t type, uint8_t bind, uint64_t sh_type,
 }
 
 void elftool_dump_nm32(list_t *lst_syms) {
-  syms32_t *syms = (syms32_t *)lst_syms->content;
-  uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
-  uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
+  sym32_t *syms = (sym32_t *)lst_syms->content;
+  uint8_t type = ELF32_ST_TYPE(get_sym32_ent(syms)->st_info);
+  uint8_t bind = ELF32_ST_BIND(get_sym32_ent(syms)->st_info);
   char nm_id = '?';
 
   /* Don't dump section and file symbols */
@@ -325,29 +321,29 @@ void elftool_dump_nm32(list_t *lst_syms) {
     /* Don't dump addr if symbol is in a section unused or in a special section
      */
     // if (syms->shdr->sh_type != SHT_NULL) {
-    if (syms->shdr->sh_type != SHT_NULL || syms->syms->st_shndx == SHN_ABS) {
-      printf("%08x", syms->syms->st_value);
+    if (get_sym32_shdr(syms)->sh_type != SHT_NULL || get_sym32_ent(syms)->st_shndx == SHN_ABS) {
+      printf("%08x", get_sym32_ent(syms)->st_value);
     } else {
       printf("        ");
     }
-    nm_id = nm_flag_magic(type, bind, syms->shdr->sh_type, syms->shdr->sh_flags,
-                          syms->syms->st_shndx);
+    nm_id = nm_flag_magic(type, bind, get_sym32_shdr(syms)->sh_type, get_sym32_shdr(syms)->sh_flags,
+                          get_sym32_ent(syms)->st_shndx);
     printf(" %c ", nm_id);
-    if (syms->bin->strtab32->shdr->sh_offset + syms->syms->st_name >
+    if (get_shdr32_ent(syms->bin->strtab32)->sh_offset + get_sym32_ent(syms)->st_name >
         syms->bin->length) {
       fprintf(stderr, "\nERROR: symbol string out of mem\n");
     } else {
       printf("%s\n",
-             (char *)&syms->bin->mem[syms->bin->strtab32->shdr->sh_offset +
-                                     syms->syms->st_name]);
+             (char *)&syms->bin->mem[get_shdr32_ent(syms->bin->strtab32)->sh_offset +
+                                     get_sym32_ent(syms)->st_name]);
     }
   }
 }
 
 void elftool_dump_nm64(list_t *lst_syms) {
-  syms64_t *syms = (syms64_t *)lst_syms->content;
-  uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
-  uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
+  sym64_t *syms = (sym64_t *)lst_syms->content;
+  uint8_t type = ELF64_ST_TYPE(get_sym64_ent(syms)->st_info);
+  uint8_t bind = ELF64_ST_BIND(get_sym64_ent(syms)->st_info);
   char nm_id = '?';
 
   /* Don't dump section and file symbols */
@@ -356,21 +352,22 @@ void elftool_dump_nm64(list_t *lst_syms) {
     // TODO debugging symbols 'N', indirect reference 'I' and 'i'
     /* Don't dump addr if symbol is in a section unused or in a special section
      */
-    if (syms->shdr->sh_type != SHT_NULL || syms->syms->st_shndx == SHN_ABS) {
-      printf("%016lx", syms->syms->st_value);
+    // if (syms->shdr->sh_type != SHT_NULL) {
+    if (get_sym64_shdr(syms)->sh_type != SHT_NULL || get_sym64_ent(syms)->st_shndx == SHN_ABS) {
+      printf("%016lx", get_sym64_ent(syms)->st_value);
     } else {
-      printf("                ");
+      printf("        ");
     }
-    nm_id = nm_flag_magic(type, bind, syms->shdr->sh_type, syms->shdr->sh_flags,
-                          syms->syms->st_shndx);
+    nm_id = nm_flag_magic(type, bind, get_sym64_shdr(syms)->sh_type, get_sym64_shdr(syms)->sh_flags,
+                          get_sym64_ent(syms)->st_shndx);
     printf(" %c ", nm_id);
-    if (syms->bin->strtab64->shdr->sh_offset + syms->syms->st_name >
+    if (get_shdr64_ent(syms->bin->strtab64)->sh_offset + get_sym64_ent(syms)->st_name >
         syms->bin->length) {
       fprintf(stderr, "\nERROR: symbol string out of mem\n");
     } else {
       printf("%s\n",
-             (char *)&syms->bin->mem[syms->bin->strtab64->shdr->sh_offset +
-                                     syms->syms->st_name]);
+             (char *)&syms->bin->mem[get_shdr64_ent(syms->bin->strtab64)->sh_offset +
+                                     get_sym64_ent(syms)->st_name]);
     }
   }
 }
@@ -408,17 +405,17 @@ void elftool_dump_phdr32(list_t *lst_phdr) {
     // uint8_t buf[8] = {0};
     // char buf_flag[8] = "NLDINSPT";
     // for (int i  = 0 ; i < 7 ; i++) {
-    //	buf[i] = ((phdr->phdr->p_type & (1 << i)) ? buf_flag[i] : ' ');
+    //	buf[i] = ((get_phdr32_ent(phdr)->p_type & (1 << i)) ? buf_flag[i] : ' ');
     // }
     char *buf_flag[8] = {"NULL", "LOAD",  "DYNAMIC", "INTERP",
                          "NOTE", "SHLIB", "PHDR",    "TLS"};
-    printf("%8.8s ", buf_flag[phdr->phdr->p_type & 0x0F]);
-    printf("%8x ", phdr->phdr->p_flags);
-    printf("%8x ", phdr->phdr->p_offset);
-    printf("%8x ", phdr->phdr->p_vaddr);
-    printf("%8x ", phdr->phdr->p_filesz);
-    printf("%8x ", phdr->phdr->p_memsz);
-    printf("%6x\n", phdr->phdr->p_align);
+    printf("%8.8s ", buf_flag[get_phdr32_ent(phdr)->p_type & 0x0F]);
+    printf("%8x ", get_phdr32_ent(phdr)->p_flags);
+    printf("%8x ", get_phdr32_ent(phdr)->p_offset);
+    printf("%8x ", get_phdr32_ent(phdr)->p_vaddr);
+    printf("%8x ", get_phdr32_ent(phdr)->p_filesz);
+    printf("%8x ", get_phdr32_ent(phdr)->p_memsz);
+    printf("%6x\n", get_phdr32_ent(phdr)->p_align);
   }
 }
 
@@ -433,23 +430,23 @@ void elftool_dump_phdr64(list_t *lst_phdr) {
     // uint8_t buf[8] = {0};
     // char buf_flag[8] = "NLDINSPT";
     // for (int i  = 0 ; i < 7 ; i++) {
-    //	buf[i] = ((phdr->phdr->p_type & (1 << i)) ? buf_flag[i] : ' ');
+    //	buf[i] = ((get_phdr64_ent(phdr)->p_type & (1 << i)) ? buf_flag[i] : ' ');
     // }
     char *buf_flag[8] = {"NULL", "LOAD",  "DYNAMIC", "INTERP",
                          "NOTE", "SHLIB", "PHDR",    "TLS"};
-    if ((phdr->phdr->p_type & 0x60000000) != 0) {
+    if ((get_phdr64_ent(phdr)->p_type & 0x60000000) != 0) {
       printf("%8.8s ", "OS_SPEC");
-    } else if ((phdr->phdr->p_type & 0x70000000) != 0) {
+    } else if ((get_phdr64_ent(phdr)->p_type & 0x70000000) != 0) {
       printf("%8.8s ", "PROC_SPEC");
     } else {
-      printf("%8.8s ", buf_flag[phdr->phdr->p_type & 0x0F]);
+      printf("%8.8s ", buf_flag[get_phdr64_ent(phdr)->p_type & 0x0F]);
     }
-    printf("%8x ", phdr->phdr->p_flags);
-    printf("%16lx ", phdr->phdr->p_offset);
-    printf("%16lx ", phdr->phdr->p_vaddr);
-    printf("%16lx ", phdr->phdr->p_filesz);
-    printf("%16lx ", phdr->phdr->p_memsz);
-    printf("%6lx\n", phdr->phdr->p_align);
+    printf("%8x ", get_phdr64_ent(phdr)->p_flags);
+    printf("%16lx ", get_phdr64_ent(phdr)->p_offset);
+    printf("%16lx ", get_phdr64_ent(phdr)->p_vaddr);
+    printf("%16lx ", get_phdr64_ent(phdr)->p_filesz);
+    printf("%16lx ", get_phdr64_ent(phdr)->p_memsz);
+    printf("%6lx\n", get_phdr64_ent(phdr)->p_align);
   }
 }
 
@@ -487,21 +484,21 @@ void elftool_dump_shdr32(list_t *lst_shdr) {
     // printf("%08x ", shdr->shdr->sh_name);
     printf("%16.16s ", " ");
     if (shdr->bin->shstrtab32 &&
-        shdr->bin->shstrtab32->shdr->sh_offset + shdr->shdr->sh_name <
+        get_shdr32_ent(shdr->bin->shstrtab32)->sh_offset + get_shdr32_ent(shdr)->sh_name <
             shdr->bin->length) {
       printf("%16.16s ",
-             (char *)&shdr->bin->mem[shdr->bin->shstrtab32->shdr->sh_offset +
-                                     shdr->shdr->sh_name]);
+             (char *)&shdr->bin->mem[get_shdr32_ent(shdr->bin->shstrtab32)->sh_offset +
+                                     get_shdr32_ent(shdr)->sh_name]);
     }
-    printf("%8x ", shdr->shdr->sh_type);
-    printf("%8x ", shdr->shdr->sh_flags);
-    printf("%8x ", shdr->shdr->sh_addr);
-    printf("%8x ", shdr->shdr->sh_offset);
-    printf("%8x ", shdr->shdr->sh_size);
-    printf("%4x ", shdr->shdr->sh_link);
-    printf("%4x ", shdr->shdr->sh_info);
-    printf("%5x ", shdr->shdr->sh_addralign);
-    printf("%5x\n", shdr->shdr->sh_entsize);
+    printf("%8x ", get_shdr32_ent(shdr)->sh_type);
+    printf("%8x ", get_shdr32_ent(shdr)->sh_flags);
+    printf("%8x ", get_shdr32_ent(shdr)->sh_addr);
+    printf("%8x ", get_shdr32_ent(shdr)->sh_offset);
+    printf("%8x ", get_shdr32_ent(shdr)->sh_size);
+    printf("%4x ", get_shdr32_ent(shdr)->sh_link);
+    printf("%4x ", get_shdr32_ent(shdr)->sh_info);
+    printf("%5x ", get_shdr32_ent(shdr)->sh_addralign);
+    printf("%5x\n", get_shdr32_ent(shdr)->sh_entsize);
   }
 }
 
@@ -513,23 +510,24 @@ void elftool_dump_shdr64(list_t *lst_shdr) {
   }
   if (shdr) {
     printf("%3d ", shdr->idx);
+    // printf("%08x ", shdr->shdr->sh_name);
     printf("%16.16s ", " ");
     if (shdr->bin->shstrtab64 &&
-        shdr->bin->shstrtab64->shdr->sh_offset + shdr->shdr->sh_name <
+        get_shdr64_ent(shdr->bin->shstrtab64)->sh_offset + get_shdr64_ent(shdr)->sh_name <
             shdr->bin->length) {
       printf("%16.16s ",
-             (char *)&shdr->bin->mem[shdr->bin->shstrtab64->shdr->sh_offset +
-                                     shdr->shdr->sh_name]);
+             (char *)&shdr->bin->mem[get_shdr64_ent(shdr->bin->shstrtab64)->sh_offset +
+                                     get_shdr64_ent(shdr)->sh_name]);
     }
-    printf("%08x ", shdr->shdr->sh_type);
-    printf("%10lx ", shdr->shdr->sh_flags);
-    printf("%10lx ", shdr->shdr->sh_addr);
-    printf("%10lx ", shdr->shdr->sh_offset);
-    printf("%10lx ", shdr->shdr->sh_size);
-    printf("%4x ", shdr->shdr->sh_link);
-    printf("%4x ", shdr->shdr->sh_info);
-    printf("%5lx ", shdr->shdr->sh_addralign);
-    printf("%5lx\n", shdr->shdr->sh_entsize);
+    printf("%08x ", get_shdr64_ent(shdr)->sh_type);
+    printf("%10lx ", get_shdr64_ent(shdr)->sh_flags);
+    printf("%10lx ", get_shdr64_ent(shdr)->sh_addr);
+    printf("%10lx ", get_shdr64_ent(shdr)->sh_offset);
+    printf("%10lx ", get_shdr64_ent(shdr)->sh_size);
+    printf("%4x ", get_shdr64_ent(shdr)->sh_link);
+    printf("%4x ", get_shdr64_ent(shdr)->sh_info);
+    printf("%5lx ", get_shdr64_ent(shdr)->sh_addralign);
+    printf("%5lx\n", get_shdr64_ent(shdr)->sh_entsize);
   }
 }
 
@@ -549,26 +547,26 @@ void elftool_dump_shdr(elftool_t *bin) {
   printf("\n");
 }
 
-void elftool_dump_syms32(list_t *lst_syms) {
-  syms32_t *syms = NULL;
+void elftool_dump_sym32(list_t *lst_syms) {
+  sym32_t *syms = NULL;
 
   if (lst_syms) {
-    syms = (syms32_t *)lst_syms->content;
+    syms = (sym32_t *)lst_syms->content;
   }
   if (syms) {
     printf("%3d ", syms->idx);
-    if (syms->bin->strtab32->shdr->sh_offset + syms->syms->st_name >
+    if (get_shdr32_ent(syms->bin->strtab32)->sh_offset + get_sym32_ent(syms)->st_name >
         syms->bin->length) {
       fprintf(stderr, "\nERROR: symbol string out of mem\n");
     } else {
       printf("%32.32s ",
-             (char *)&syms->bin->mem[syms->bin->strtab32->shdr->sh_offset +
-                                     syms->syms->st_name]);
+             (char *)&syms->bin->mem[get_shdr32_ent(syms->bin->strtab32)->sh_offset +
+                                     get_sym32_ent(syms)->st_name]);
     }
-    printf("%8x ", syms->syms->st_value);
-    printf("%6x ", syms->syms->st_size);
-    uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
-    uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
+    printf("%8x ", get_sym32_ent(syms)->st_value);
+    printf("%6x ", get_sym32_ent(syms)->st_size);
+    uint8_t bind = ELF32_ST_BIND(get_sym32_ent(syms)->st_info);
+    uint8_t type = ELF32_ST_TYPE(get_sym32_ent(syms)->st_info);
     char buf[8] = {0};
     switch (bind) {
     case 0:
@@ -613,33 +611,33 @@ void elftool_dump_syms32(list_t *lst_syms) {
       break;
     }
     printf("%8.8s ", buf);
-    printf("%4hhx ", syms->syms->st_info);
-    printf("%4hhd ", syms->syms->st_other);
-    printf("%6x\n", syms->syms->st_shndx);
+    printf("%4hhx ", get_sym32_ent(syms)->st_info);
+    printf("%4hhd ", get_sym32_ent(syms)->st_other);
+    printf("%6x\n", get_sym32_ent(syms)->st_shndx);
   }
 }
 
-void elftool_dump_syms64(list_t *lst_syms) {
-  syms64_t *syms = NULL;
+void elftool_dump_sym64(list_t *lst_syms) {
+  sym64_t *syms = NULL;
 
   if (lst_syms) {
-    syms = (syms64_t *)lst_syms->content;
+    syms = (sym64_t *)lst_syms->content;
   }
   if (syms) {
     printf("%3d ", syms->idx);
-    //		printf("%16x ", syms->syms->st_name);
-    if (syms->bin->strtab64->shdr->sh_offset + syms->syms->st_name >
+    //		printf("%16x ", get_sym64_ent->st_name);
+    if (get_shdr64_ent(syms->bin->strtab64)->sh_offset + get_sym64_ent(syms)->st_name >
         syms->bin->length) {
       fprintf(stderr, "\nERROR: symbol string out of mem\n");
     } else {
       printf("%32.32s ",
-             (char *)&syms->bin->mem[syms->bin->strtab64->shdr->sh_offset +
-                                     syms->syms->st_name]);
+             (char *)&syms->bin->mem[get_shdr64_ent(syms->bin->strtab64)->sh_offset +
+                                     get_sym64_ent(syms)->st_name]);
     }
-    printf("%16lx ", syms->syms->st_value);
-    printf("%6lx ", syms->syms->st_size);
-    uint8_t bind = ELF32_ST_BIND(syms->syms->st_info);
-    uint8_t type = ELF32_ST_TYPE(syms->syms->st_info);
+    printf("%16lx ", get_sym64_ent(syms)->st_value);
+    printf("%6lx ", get_sym64_ent(syms)->st_size);
+    uint8_t bind = ELF32_ST_BIND(get_sym64_ent(syms)->st_info);
+    uint8_t type = ELF32_ST_TYPE(get_sym64_ent(syms)->st_info);
     char buf[8] = {0};
     switch (bind) {
     case 0:
@@ -684,8 +682,8 @@ void elftool_dump_syms64(list_t *lst_syms) {
       break;
     }
     printf("%8.8s ", buf);
-    printf("%4hhd ", syms->syms->st_other);
-    printf("%6x\n", syms->syms->st_shndx);
+    printf("%4hhd ", get_sym64_ent(syms)->st_other);
+    printf("%6x\n", get_sym64_ent(syms)->st_shndx);
   }
 }
 
@@ -694,11 +692,11 @@ void elftool_dump_syms(elftool_t *bin) {
   if (bin->elfclass == ELFCLASS32) {
     printf("%3s %32s %8s %6s %8s %8s %4s %6s\n", "id", "name", "value", "size",
            "bind", "type", "other", "shndx");
-    ft_lstiter(bin->syms, elftool_dump_syms32);
+    ft_lstiter(bin->syms, elftool_dump_sym32);
   } else {
     printf("%3s %32s %16s %6s %8s %8s %4s %6s\n", "id", "name", "value", "size",
            "bind", "type", "other", "shndx");
-    ft_lstiter(bin->syms, elftool_dump_syms64);
+    ft_lstiter(bin->syms, elftool_dump_sym64);
   }
   printf("\n");
 }

@@ -10,6 +10,8 @@
 #include <elf.h>
 #include <endian.h>
 
+#include <stdlib.h>
+
 #define STBLOCKS_UNIT 512
 
 int elftool_load(elftool_t *bin, char *bin_path) {
@@ -41,10 +43,19 @@ int elftool_load(elftool_t *bin, char *bin_path) {
     }
   }
   if (r == 0) {
-    if (!(bin->mem = mmap(NULL, bin->length, PROT_READ | PROT_WRITE,
-                          MAP_PRIVATE, fd, 0))) {
+    //if (!(bin->mem = mmap(NULL, bin->length, PROT_READ | PROT_WRITE,
+    //                      MAP_PRIVATE, fd, 0))) {
+    //  r = EINVAL;
+    //  fprintf(stderr, "mmap call failed");
+    //}
+    if (!(bin->mem = malloc(bin->length))) {
+      r = ENOMEM;
+      fprintf(stderr, "malloc call failed\n");
+    }
+    ssize_t r = read(fd, bin->mem, bin->length);
+    if (r < 0) {
+      fprintf(stderr, "Read return error\n");
       r = EINVAL;
-      fprintf(stderr, "mmap call failed");
     }
   }
   if (fd >= 0) {

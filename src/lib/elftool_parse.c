@@ -3,32 +3,29 @@
 static int elftool_parse64_ehdr(elftool_t *bin) {
   int r = 0;
 
-  if (((Elf64_Ehdr *)bin->mem)->e_phoff > bin->length) {
+  if (get_ehdr64(bin)->e_phoff > bin->length) {
     _error(r, "e_phoff outside the scope");
   }
   if (r == 0) {
-    if (((Elf64_Ehdr *)bin->mem)->e_shoff > bin->length) {
+    if (get_ehdr64(bin)->e_shoff > bin->length) {
       _error(r, "e_shoff outside the scope");
     }
   }
   if (r == 0) {
-    if (((Elf64_Ehdr *)bin->mem)->e_phentsize *
-                ((Elf64_Ehdr *)bin->mem)->e_phnum +
-            ((Elf64_Ehdr *)bin->mem)->e_phoff >
+    if (get_ehdr64(bin)->e_phentsize *
+                get_ehdr64(bin)->e_phnum +
+            get_ehdr64(bin)->e_phoff >
         bin->length) {
       _error(r, "phdr table run out of scope");
     }
   }
   if (r == 0) {
-    if (((Elf64_Ehdr *)bin->mem)->e_shentsize *
-                ((Elf64_Ehdr *)bin->mem)->e_shnum +
-            ((Elf64_Ehdr *)bin->mem)->e_shoff >
+    if (get_ehdr64(bin)->e_shentsize *
+                get_ehdr64(bin)->e_shnum +
+            get_ehdr64(bin)->e_shoff >
         bin->length) {
       _error(r, "shdr table run out of scope");
     }
-  }
-  if (r == 0) {
-    bin->ehdr64 = (Elf64_Ehdr *)bin->mem;
   }
   return (r);
 }
@@ -36,32 +33,29 @@ static int elftool_parse64_ehdr(elftool_t *bin) {
 static int elftool_parse32_ehdr(elftool_t *bin) {
   int r = 0;
 
-  if (((Elf32_Ehdr *)bin->mem)->e_phoff > bin->length) {
+  if (get_ehdr32(bin)->e_phoff > bin->length) {
     _error(r, "e_phoff outside the scope");
   }
   if (r == 0) {
-    if (((Elf32_Ehdr *)bin->mem)->e_shoff > bin->length) {
+    if (get_ehdr32(bin)->e_shoff > bin->length) {
       _error(r, "e_shoff outside the scope");
     }
   }
   if (r == 0) {
-    if (((Elf32_Ehdr *)bin->mem)->e_phentsize *
-                ((Elf32_Ehdr *)bin->mem)->e_phnum +
-            ((Elf32_Ehdr *)bin->mem)->e_phoff >
+    if (get_ehdr32(bin)->e_phentsize *
+                get_ehdr32(bin)->e_phnum +
+            get_ehdr32(bin)->e_phoff >
         bin->length) {
       _error(r, "phdr table run out of scope");
     }
   }
   if (r == 0) {
-    if (((Elf32_Ehdr *)bin->mem)->e_shentsize *
-                ((Elf32_Ehdr *)bin->mem)->e_shnum +
-            ((Elf32_Ehdr *)bin->mem)->e_shoff >
+    if (get_ehdr32(bin)->e_shentsize *
+                get_ehdr32(bin)->e_shnum +
+            get_ehdr32(bin)->e_shoff >
         bin->length) {
       _error(r, "shdr table run out of scope");
     }
-  }
-  if (r == 0) {
-    bin->ehdr32 = (Elf32_Ehdr *)bin->mem;
   }
   return (r);
 }
@@ -108,27 +102,30 @@ int elftool_parse_ehdr(elftool_t *bin) {
   }
   return (r);
 }
-int elftool_parse_phdr_32(elftool_t *bin) {
+
+int elftool_parse_phdr_32(elftool_t *bin)
+{
   phdr32_t phdr = {0};
   list_t *new = NULL;
-  uint32_t offset = bin->ehdr32->e_phoff;
+  uint32_t offset = get_ehdr32(bin)->e_phoff;
   uint16_t idx = 0;
   int r = 0;
 
-  while (r == 0 && idx < bin->ehdr32->e_phnum) {
+  while (r == 0 && idx < get_ehdr32(bin)->e_phnum) {
     if (offset >= bin->length) {
       _error(r, "offset out of scope in phdr table");
     }
+    Elf32_Phdr *phdr_ent = ((Elf32_Phdr *)&bin->mem[offset]);
     phdr.idx = idx;
-    phdr.phdr = ((Elf32_Phdr *)&bin->mem[offset]);
+    phdr.p_offset = offset;
     phdr.bin = bin;
-    phdr.mem = &bin->mem[phdr.phdr->p_offset];
+    phdr.mem_offset = phdr_ent->p_offset;
     new = ft_lstnew(&phdr, sizeof(phdr));
     if (!new) {
       _error(r, "malloc error");
     }
     ft_lstpush(&bin->phdr, new);
-    offset += bin->ehdr32->e_phentsize;
+    offset += get_ehdr32(bin)->e_phentsize;
     idx++;
   }
   return (r);
@@ -137,24 +134,25 @@ int elftool_parse_phdr_32(elftool_t *bin) {
 int elftool_parse_phdr_64(elftool_t *bin) {
   phdr64_t phdr = {0};
   list_t *new = NULL;
-  uint64_t offset = bin->ehdr64->e_phoff;
+  uint64_t offset = get_ehdr64(bin)->e_phoff;
   uint16_t idx = 0;
   int r = 0;
 
-  while (r == 0 && idx < bin->ehdr64->e_phnum) {
+  while (r == 0 && idx < get_ehdr64(bin)->e_phnum) {
     if (offset >= bin->length) {
       _error(r, "offset out of scope in phdr table");
     }
+    Elf64_Phdr *phdr_ent = ((Elf64_Phdr *)&bin->mem[offset]);
     phdr.idx = idx;
-    phdr.phdr = ((Elf64_Phdr *)&bin->mem[offset]);
+    phdr.p_offset = offset;
     phdr.bin = bin;
-    phdr.mem = &bin->mem[phdr.phdr->p_offset];
+    phdr.mem_offset = phdr_ent->p_offset;
     new = ft_lstnew(&phdr, sizeof(phdr));
     if (!new) {
       _error(r, "malloc error");
     }
     ft_lstpush(&bin->phdr, new);
-    offset += bin->ehdr64->e_phentsize;
+    offset += get_ehdr64(bin)->e_phentsize;
     idx++;
   }
   return (r);
@@ -175,22 +173,23 @@ int elftool_parse_shdr_32(elftool_t *bin) {
   list_t *head;
   shdr32_t shdr = {0};
   list_t *new = NULL;
-  uint32_t offset = bin->ehdr32->e_shoff;
+  uint32_t offset = get_ehdr32(bin)->e_shoff;
   int symtabstrndx = -1;
   uint16_t idx = 0;
   int r = 0;
 
-  if (!bin || !bin->ehdr32) {
+  if (!bin) {
     r = -1;
   } else {
-    while (r == 0 && idx < bin->ehdr32->e_shnum) {
+    while (r == 0 && idx < get_ehdr32(bin)->e_shnum) {
       if (offset >= bin->length) {
         _error(r, "offset out of scope in shdr table");
       }
+      Elf32_Shdr* shdr_ent = ((Elf32_Shdr *)&bin->mem[offset]);
       if (r == 0) {
         shdr.idx = idx;
-        shdr.shdr = ((Elf32_Shdr *)&bin->mem[offset]);
-        shdr.mem = &bin->mem[shdr.shdr->sh_offset];
+        shdr.sh_offset = offset;
+        shdr.mem_offset = shdr_ent->sh_offset;
         shdr.bin = bin;
       }
       if (r == 0) {
@@ -201,10 +200,10 @@ int elftool_parse_shdr_32(elftool_t *bin) {
       }
       if (r == 0) {
         ft_lstpush(&bin->shdr, new);
-        offset += bin->ehdr32->e_shentsize;
+        offset += get_ehdr32(bin)->e_shentsize;
         idx++;
-        if (shdr.shdr->sh_type == SHT_SYMTAB) {
-          symtabstrndx = shdr.shdr->sh_link;
+        if (shdr_ent->sh_type == SHT_SYMTAB) {
+          symtabstrndx = shdr_ent->sh_link;
         }
       }
     }
@@ -214,8 +213,8 @@ int elftool_parse_shdr_32(elftool_t *bin) {
     if (r == 0) {
       head = bin->shdr;
       while (head) {
-        if (((shdr32_t *)head->content)->shdr->sh_type == SHT_STRTAB) {
-          if (bin->ehdr32->e_shstrndx == ((shdr32_t *)head->content)->idx) {
+        if (get_shdr32_ent(head->content)->sh_type == SHT_STRTAB) {
+          if (get_ehdr32(bin)->e_shstrndx == ((shdr32_t *)head->content)->idx) {
             bin->shstrtab32 = ((shdr32_t *)head->content);
           }
           if (symtabstrndx == ((shdr32_t *)head->content)->idx) {
@@ -233,22 +232,23 @@ int elftool_parse_shdr_64(elftool_t *bin) {
   list_t *head;
   shdr64_t shdr = {0};
   list_t *new = NULL;
-  uint64_t offset = bin->ehdr64->e_shoff;
+  uint64_t offset = get_ehdr64(bin)->e_shoff;
   int symtabstrndx = -1;
   uint16_t idx = 0;
   int r = 0;
 
-  if (!bin || !bin->ehdr64) {
+  if (!bin) {
     r = -1;
   } else {
-    while (r == 0 && idx < bin->ehdr64->e_shnum) {
+    while (r == 0 && idx < get_ehdr64(bin)->e_shnum) {
       if (offset >= bin->length) {
         _error(r, "offset out of scope in shdr table");
       }
+      Elf64_Shdr* shdr_ent = ((Elf64_Shdr *)&bin->mem[offset]);
       if (r == 0) {
         shdr.idx = idx;
-        shdr.shdr = ((Elf64_Shdr *)&bin->mem[offset]);
-        shdr.mem = &bin->mem[shdr.shdr->sh_offset];
+        shdr.sh_offset = offset;
+        shdr.mem_offset = shdr_ent->sh_offset;
         shdr.bin = bin;
       }
       if (r == 0) {
@@ -259,11 +259,11 @@ int elftool_parse_shdr_64(elftool_t *bin) {
       }
       if (r == 0) {
         ft_lstpush(&bin->shdr, new);
-        if (shdr.shdr->sh_type == SHT_SYMTAB) {
-          symtabstrndx = shdr.shdr->sh_link;
-        }
-        offset += bin->ehdr64->e_shentsize;
+        offset += get_ehdr64(bin)->e_shentsize;
         idx++;
+        if (shdr_ent->sh_type == SHT_SYMTAB) {
+          symtabstrndx = shdr_ent->sh_link;
+        }
       }
     }
     if (symtabstrndx < 0) {
@@ -272,8 +272,8 @@ int elftool_parse_shdr_64(elftool_t *bin) {
     if (r == 0) {
       head = bin->shdr;
       while (head) {
-        if (((shdr64_t *)head->content)->shdr->sh_type == SHT_STRTAB) {
-          if (bin->ehdr64->e_shstrndx == ((shdr64_t *)head->content)->idx) {
+        if (get_shdr64_ent(head->content)->sh_type == SHT_STRTAB) {
+          if (get_ehdr64(bin)->e_shstrndx == ((shdr64_t *)head->content)->idx) {
             bin->shstrtab64 = ((shdr64_t *)head->content);
           }
           if (symtabstrndx == ((shdr64_t *)head->content)->idx) {
@@ -300,7 +300,7 @@ int elftool_parse_shdr(elftool_t *bin) {
 
 int elftool_parse_syms64(elftool_t *bin, void *symtab) {
   int r = 0;
-  syms64_t syms = {0};
+  sym64_t syms = {0};
   list_t *new = NULL;
   uint16_t idx = 0;
 
@@ -308,31 +308,34 @@ int elftool_parse_syms64(elftool_t *bin, void *symtab) {
     r = 0;
   } else {
     for (uint64_t sym_offset = 0;
-         r == 0 && sym_offset < ((Elf64_Shdr *)symtab)->sh_size;
-         sym_offset += ((Elf64_Shdr *)symtab)->sh_entsize) {
-      uint64_t offset = sym_offset + ((Elf64_Shdr *)symtab)->sh_offset;
+         r == 0 && sym_offset < get_shdr64_ent(symtab)->sh_size;
+         sym_offset += get_shdr64_ent(symtab)->sh_entsize) {
+
+      uint64_t offset = sym_offset + get_shdr64_ent(symtab)->sh_offset;
       if (offset + sizeof(Elf64_Shdr) > bin->length) {
         _error(r, "offset out of scope in shdr table");
       }
+      Elf64_Sym *sym_ent = (Elf64_Sym *)&bin->mem[offset];
       if (r == 0) {
         syms.idx = idx++;
-        syms.syms = (Elf64_Sym *)&bin->mem[offset];
+        syms.sym_offset = offset;
+        syms.mem_offset = sym_ent->st_value;
         syms.bin = bin;
         if (!syms.bin->strtab64) {
           _error(r, "no strtab found");
         }
-        if (r == 0 && syms.syms->st_name + syms.bin->strtab64->shdr->sh_offset >
+        if (r == 0 && sym_ent->st_name + get_shdr64_ent(syms.bin->strtab64)->sh_offset >
                           bin->length) {
           _error(r, "symbol name value out of scope");
         }
       }
       if (r == 0) {
         for (list_t *head = bin->shdr; head->next; head = head->next) {
-          if (((shdr64_t *)head->content)->idx == syms.syms->st_shndx) {
-            syms.shdr = ((shdr64_t *)head->content)->shdr;
+          if (((shdr64_t *)head->content)->idx == sym_ent->st_shndx) {
+            syms.sh_offset = ((shdr64_t *)head->content)->sh_offset;
           }
         }
-        new = ft_lstnew(&syms, sizeof(syms64_t));
+        new = ft_lstnew(&syms, sizeof(sym64_t));
         if (!new) {
           _error(r, "malloc error");
         } else {
@@ -346,7 +349,7 @@ int elftool_parse_syms64(elftool_t *bin, void *symtab) {
 
 int elftool_parse_syms32(elftool_t *bin, void *symtab) {
   int r = 0;
-  syms32_t syms = {0};
+  sym32_t syms = {0};
   list_t *new = NULL;
   uint16_t idx = 0;
 
@@ -354,31 +357,34 @@ int elftool_parse_syms32(elftool_t *bin, void *symtab) {
     r = 0;
   } else {
     for (uint32_t sym_offset = 0;
-         r == 0 && sym_offset < ((Elf32_Shdr *)symtab)->sh_size;
-         sym_offset += ((Elf32_Shdr *)symtab)->sh_entsize) {
-      uint32_t offset = sym_offset + ((Elf32_Shdr *)symtab)->sh_offset;
+         r == 0 && sym_offset < get_shdr32_ent(symtab)->sh_size;
+         sym_offset += get_shdr32_ent(symtab)->sh_entsize) {
+
+      uint32_t offset = sym_offset + get_shdr32_ent(symtab)->sh_offset;
       if (offset + sizeof(Elf64_Shdr) > bin->length) {
         _error(r, "offset out of scope in shdr table");
       }
+      Elf32_Sym *sym_ent = (Elf32_Sym *)&bin->mem[offset];
       if (r == 0) {
         syms.idx = idx++;
-        syms.syms = (Elf32_Sym *)&bin->mem[offset];
+        syms.sym_offset = offset;
+        syms.mem_offset = sym_ent->st_value;
         syms.bin = bin;
         if (!syms.bin->strtab32) {
           _error(r, "no strtab found");
         }
-        if (r == 0 && syms.syms->st_name + syms.bin->strtab32->shdr->sh_offset >
+        if (r == 0 && sym_ent->st_name + get_shdr32_ent(syms.bin->strtab32)->sh_offset >
                           bin->length) {
           _error(r, "symbol name value out of scope");
         }
       }
       if (r == 0) {
         for (list_t *head = bin->shdr; head->next; head = head->next) {
-          if (((shdr32_t *)head->content)->idx == syms.syms->st_shndx) {
-            syms.shdr = ((shdr32_t *)head->content)->shdr;
+          if (((shdr32_t *)head->content)->idx == sym_ent->st_shndx) {
+            syms.sh_offset = ((shdr32_t *)head->content)->sh_offset;
           }
         }
-        new = ft_lstnew(&syms, sizeof(syms32_t));
+        new = ft_lstnew(&syms, sizeof(sym32_t));
         if (!new) {
           _error(r, "malloc error");
         } else {
@@ -390,25 +396,39 @@ int elftool_parse_syms32(elftool_t *bin, void *symtab) {
   return (r);
 }
 
-static int elftool_get_sym_sections(elftool_t *bin, void **symtab) {
+/*
+ * @brief get symtab section
+ * fill *symtab with either shdr32_t pointer or shdr64_t pointer.
+ * @return      0 for success
+ *              EINVAL
+ * */
+static int elftool_get_sym_sections(elftool_t *bin, void **symtab)
+{
   int r = 0;
 
+  if (!bin || !symtab)
+      return EINVAL;
   for (list_t *head = bin->shdr; head; head = head->next) {
+
     if (bin->elfclass == ELFCLASS32) {
+      if (head->content)
+        ((shdr32_t *)head->content)->bin = bin;
       if (head->content &&
-          ((shdr32_t *)head->content)->shdr->sh_type == SHT_SYMTAB) {
-        *symtab = ((shdr32_t *)head->content)->shdr;
+          get_shdr32_ent(head->content)->sh_type == SHT_SYMTAB) {
+        *symtab = ((shdr32_t *)head->content);
       }
     } else {
+      if (head->content)
+        ((shdr64_t *)head->content)->bin = bin;
       if (head->content &&
-          ((shdr64_t *)head->content)->shdr->sh_type == SHT_SYMTAB) {
-        *symtab = ((shdr64_t *)head->content)->shdr;
+          get_shdr64_ent(head->content)->sh_type == SHT_SYMTAB) {
+        *symtab = ((shdr64_t *)head->content);
       }
     }
   }
-  if (!symtab) {
+  if (!*symtab) {
     printf("missing symbol table in section entry\n");
-    r = -1;
+    r = EINVAL;
   }
   return (r);
 }

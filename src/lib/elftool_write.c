@@ -3,18 +3,18 @@
 // TODO copy symbols table and section table
 void elftool_write64(elftool_t *bin, int fd) {
   if (bin) {
-    write(fd, bin->ehdr64, 0x40); // Copy ELF header.
+    write(fd, bin->mem, 0x40); // Copy ELF header.
     /* Copy phdr table */
-    lseek(fd, bin->ehdr64->e_phoff, SEEK_SET);
+    lseek(fd, get_ehdr64(bin)->e_phoff, SEEK_SET);
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        write(fd, ((phdr64_t *)head->content)->phdr, bin->ehdr64->e_phentsize);
+        write(fd, get_phdr64_ent(head->content), get_ehdr64(bin)->e_phentsize);
       }
     }
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        lseek(fd, ((phdr64_t *)head->content)->phdr->p_offset, SEEK_SET);
-        write(fd, ((phdr64_t *)head->content)->mem, ((phdr64_t *)head->content)->phdr->p_filesz);
+        lseek(fd, get_phdr64_ent(head->content)->p_offset, SEEK_SET);
+        write(fd, get_phdr64_mem(head->content), get_phdr64_ent(head->content)->p_filesz);
       }
     }
     //for (list_t *head = bin->shdr; head; head = head->next) {
@@ -24,27 +24,28 @@ void elftool_write64(elftool_t *bin, int fd) {
     //          ((shdr64_t *)head->content)->shdr->sh_size);
     //  }
     //}
-    //lseek(fd, bin->ehdr64->e_shoff, SEEK_SET);
+    //lseek(fd, get_ehdr64(bin)->e_shoff, SEEK_SET);
     //for (list_t *head = bin->shdr; head; head = head->next) {
     //  if (head->content) {
-    //    write(fd, ((shdr64_t *)head->content)->shdr, bin->ehdr64->e_shentsize);
+    //    write(fd, ((shdr64_t *)head->content)->shdr, get_ehdr64(bin)->e_shentsize);
     //  }
     //}
   }
 }
 void elftool_write32(elftool_t *bin, int fd) {
   if (bin) {
-    write(fd, bin->ehdr32, 0x40);
-    lseek(fd, bin->ehdr32->e_phoff, SEEK_SET);
+    write(fd, bin->mem, 0x40); // Copy ELF header.
+    /* Copy phdr table */
+    lseek(fd, get_ehdr32(bin)->e_phoff, SEEK_SET);
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        write(fd, ((phdr32_t *)head->content)->phdr, bin->ehdr32->e_phentsize);
+        write(fd, get_phdr32_ent(head->content), get_ehdr32(bin)->e_phentsize);
       }
     }
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
-        lseek(fd, ((phdr32_t *)head->content)->phdr->p_offset, SEEK_SET);
-        write(fd, ((phdr32_t *)head->content)->mem, ((phdr32_t *)head->content)->phdr->p_filesz);
+        lseek(fd, get_phdr32_ent(head->content)->p_offset, SEEK_SET);
+        write(fd, get_phdr32_mem(head->content), get_phdr32_ent(head->content)->p_filesz);
       }
     }
     // for (list_t *head = bin->shdr; head; head = head->next) {
