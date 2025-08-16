@@ -1,5 +1,6 @@
 
 
+LIBNAME := libelftool.a
 NAME := elftool
 NAME_COVERAGE := $(NAME)_coverage
 NAME_PROFILING := $(NAME)_profiling
@@ -38,13 +39,16 @@ PRE_DIR = $(BUILD_DIR)/preprocessing
 CALLGRAPH_DIR = $(BUILD_DIR)/callgraph
 
 SRC := 											\
-	src/main.c									\
-	src/elftool.c								\
-	src/elftool_dump.c							\
-	src/elftool_getopt.c						\
-	src/elftool_parse.c							\
-	src/elftool_transform.c						\
-	src/elftool_write.c							\
+	src/client/main.c							\
+	src/client/elftool.c						\
+
+LIBSRC :=										\
+	src/lib/elftool_load.c							\
+	src/lib/elftool_dump.c							\
+	src/lib/elftool_getopt.c						\
+	src/lib/elftool_parse.c							\
+	src/lib/elftool_transform.c						\
+	src/lib/elftool_write.c							\
 
 INCDIR := inc/				\
 		  	libft/			\
@@ -52,6 +56,8 @@ INCDIR := inc/				\
 			liblst/	\
 
 IFLAGS 	= $(foreach D,$(INCDIR), -I$(D))
+
+LIBOBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(LIBSRC))
 
 OBJ = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC))
 OBJ_COVERAGE = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.cov.o, $(SRC))
@@ -70,15 +76,16 @@ LIBLST = liblst/liblst.a
 
 LIB = $(LIBLST)
 
-all: prep asm obj callgraphs misra bin
+all: prep asm obj callgraphs misra lib bin
 
 asm: $(ASM)
 prep: $(PRE)
-obj: $(OBJ) 
+obj: $(OBJ)
 coverage: $(OBJ_COVERAGE) $(NAME_COVERAGE) $(NAME_PROFILING)
 profiling: $(OBJ_PROFILING)
 callgraphs: $(CALLGRAPH_DIR)/callgraph.svg
 misra: $(MISRA_REPORT_FILE)
+lib: $(LIBNAME)
 bin: $(NAME)
 
 CGRAPH_FILE = $(NAME).wpa.000i.cgraph
@@ -88,8 +95,12 @@ $(LIBLST):
 
 $(CGRAPH_FILE): $(NAME)
 
-$(NAME): $(OBJ) 
-	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIB) $(IFLAGS) -fdump-ipa-cgraph
+$(LIBNAME): $(LIBOBJ)
+	ar rc $@ $(LIBOBJ)
+	ranlib $@
+
+$(NAME): $(LIBNAME) $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $(OBJ) $(LIB) $(LIBNAME) $(IFLAGS) -fdump-ipa-cgraph
 
 $(NAME_COVERAGE): $(OBJ_COVERAGE)
 	$(CC) $(CFLAGS) -o $@ $(OBJ_COVERAGE) $(LIB) $(IFLAGS) -lgcov
@@ -132,7 +143,7 @@ $(CALLGRAPH_DIR)/%.supergraph-eg.svg: $(OBJ_DIR)/%.c.supergraph-eg.dot
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -f $(NAME) $(NAME_COVERAGE) $(NAME_PROFILING)
+	rm -f $(NAME) $(LIBNAME) $(NAME_COVERAGE) $(NAME_PROFILING)
 	rm -f *.cgraph
 	rm -rf unit_test_*
 
