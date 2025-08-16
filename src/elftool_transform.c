@@ -4,24 +4,24 @@
 
 // TODO LMA: should create a new PT_LOAD with section injection.
 
-int nm_bin_transform(elftool_t *bin, elftool_transform_t *transform) {
+int elftool_transform(elftool_t *bin, elftool_transform_t *transform) {
   int r = 0;
 
   if (!bin || !transform) {
     r = -1;
   } else {
     if (transform->type == NM_CODECAVE_INJECT) {
-      r = nm_bin_transform_codecave_injection(bin, transform);
+      r = elftool_transform_codecave_injection(bin, transform);
     } else if (transform->type == NM_SILVIO_INJECT) {
-      r = nm_bin_transform_silvio_injection(bin, transform);
+      r = elftool_transform_silvio_injection(bin, transform);
     } else {
-      r = nm_bin_transform_section_injection(bin, transform);
+      r = elftool_transform_section_injection(bin, transform);
     }
   }
   return (r);
 }
 
-int nm_bin_transform_codecave_injection(elftool_t *bin,
+int elftool_transform_codecave_injection(elftool_t *bin,
                                         elftool_transform_t *transform) {
   int r = 0;
 
@@ -44,7 +44,7 @@ int nm_bin_transform_codecave_injection(elftool_t *bin,
  * @return  0 on succes
  *          -1 on error
  * */
-int extract_last_ptload_infos(elftool_t *bin, uint64_t *vaddr, uint64_t *fileoff)
+int get_vaddr(elftool_t *bin, uint64_t *vaddr)
 {
   phdr64_t *last_ptload = NULL;
   int r = 0;
@@ -61,7 +61,6 @@ int extract_last_ptload_infos(elftool_t *bin, uint64_t *vaddr, uint64_t *fileoff
   }
   else {
       *vaddr = last_ptload->phdr->p_offset + last_ptload->phdr->p_memsz;
-      *fileoff = last_ptload->phdr->p_offset + last_ptload->phdr->p_filesz;
   }
   return (r);
 }
@@ -187,24 +186,96 @@ int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
   return (r);
 }
 
-int nm_bin_transform_section_injection(elftool_t *bin,
+/* @brief Append the code in @param transform to binary.
+ * Fill transform->file_offset with code file offset.
+ * */
+int elftool_append_code(elftool_t *bin, elftool_transform_t *transform)
+{
+    uint8_t *new_mem;
+
+    if (!bin || !transform)
+        return EINVAL;
+    new_mem = malloc(bin->length + transform->code_len);
+    if (new_mem == NULL)
+        return ENOMEM;
+    memcpy(new_mem, bin->mem, bin->length);
+    memcpy(&new_mem[bin->length], transform->code, transform->code_len);
+    transform->code_file_offset = bin->length;
+    bin->length = bin->length + transform->code_len;
+    free(bin->mem);
+    bin->mem = new_mem;
+    return 0;
+}
+
+/* @brief Add a new phdr
+ * Relocate the whole phdr table at the end of the file.
+ * Fill transform->phdr_file_offset.
+ * */
+int elftool_add_phdr(elftool_t *bin, elftool_transform_t *transform)
+{
+    uint8_t *new_mem;
+
+    if (!bin || !transform)
+        return EINVAL;
+    Elf64_Off phdr_table_size = bin->ehdr64->e_phoff +
+        (((Elf64_Off)bin->ehdr64->e_phnum) * (Elf64_Off)bin->ehdr64->e_phentsize);
+    new_mem = malloc(bin->length + phdr_table_size + (Elf64_Off)bin->ehdr64->e_phentsize);
+    if (new_mem == NULL)
+        return ENOMEM;
+    memcpy(new_mem, bin->mem, bin->length);
+    memcpy(&new_mem[bin->length], &bin->mem[bin->ehdr64->e_phoff], phdr_table_size);
+    memset(&new_mem[bin->length + phdr_table_size], 0x42, sizeof(Elf64_Phdr));
+    bin->ehdr64->e_phoff = bin->length; // Relocate program header offset
+    bin->ehdr64->e_phnum += 1;
+    transform->phdr_file_offset = bin->length + phdr_table_size;
+    bin->length += phdr_table_size + (size_t)bin->ehdr64->e_phentsize;
+    free(bin->mem);
+    bin->mem = new_mem;
+    return 0;
+}
+
+int elftool_transform_section_injection(elftool_t *bin,
                                        elftool_transform_t *transform) {
   int r = 0;
+  Elf64_Addr vaddr = 0;
 
   if (!bin || !transform) {
     r = -1;
   } else {
     if (bin->elfclass == ELFCLASS32) {
-      r = 0;
+      r = ENOSYS;
     } else {
       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-      r = inject_shdr64(bin, transform);
+      r = elftool_append_code(bin, transform);
+      if (r == 0) {
+        r = elftool_add_phdr(bin, transform);
+      }
+      if (r == 0) {
+        r = get_vaddr(bin, &vaddr);
+      }
+      if (r == 0) {
+          phdr64_t new_phdr = {
+              .idx = bin->ehdr64->e_phnum - 1,
+              .phdr = (Elf64_Phdr *)&bin->mem[transform->phdr_file_offset],
+              .bin = bin,
+          };
+          new_phdr.phdr->p_type = PT_LOAD;			/* Segment type */
+          new_phdr.phdr->p_flags = PF_R | PF_W;		/* Segment flags */
+          new_phdr.phdr->p_offset = transform->code_file_offset;		/* Segment file offset */
+          new_phdr.phdr->p_vaddr = vaddr;		/* Segment virtual address */
+          new_phdr.phdr->p_paddr = 0;		/* Segment physical address */
+          new_phdr.phdr->p_filesz = transform->code_len;		/* Segment size in file */
+          new_phdr.phdr->p_memsz = transform->code_len;		/* Segment size in memory */
+          new_phdr.phdr->p_align = 0x1000;		/* Segment alignment */
+          list_t *new = ft_lstnew(&new_phdr, sizeof(new_phdr));
+          ft_lstpush(&bin->phdr, new);
+      }
     }
   }
   return (r);
 }
 
-int nm_bin_transform_silvio_injection(elftool_t *bin,
+int elftool_transform_silvio_injection(elftool_t *bin,
                                       elftool_transform_t *transform) {
   int r = 0;
 
