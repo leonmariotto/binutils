@@ -36,18 +36,9 @@ int elftool_load(elftool_t *bin, char *bin_path) {
     }
   }
   if (r == 0) {
-    bin->length = stats.st_blocks * STBLOCKS_UNIT;
-    if (bin->length % 4096) {
-      r = EINVAL;
-      fprintf(stderr, "bin->length not aligned to pagesize");
-    }
+    bin->length = stats.st_size;
   }
   if (r == 0) {
-    //if (!(bin->mem = mmap(NULL, bin->length, PROT_READ | PROT_WRITE,
-    //                      MAP_PRIVATE, fd, 0))) {
-    //  r = EINVAL;
-    //  fprintf(stderr, "mmap call failed");
-    //}
     if (!(bin->mem = malloc(bin->length))) {
       r = ENOMEM;
       fprintf(stderr, "malloc call failed\n");
