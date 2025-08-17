@@ -1,5 +1,7 @@
 #include "elftool.h"
 
+#include <string.h>
+
 // TODO copy symbols table and section table
 void elftool_write64(elftool_t *bin, int fd) {
   if (bin) {
@@ -11,25 +13,28 @@ void elftool_write64(elftool_t *bin, int fd) {
         write(fd, get_phdr64_ent(head->content), get_ehdr64(bin)->e_phentsize);
       }
     }
+    /* Copy section table: optional */
+    lseek(fd, get_ehdr64(bin)->e_shoff, SEEK_SET);
+    for (list_t *head = bin->shdr; head; head = head->next) {
+      if (head->content) {
+        write(fd, get_shdr64_ent(head->content), get_ehdr64(bin)->e_shentsize);
+      }
+    }
+    /* Copy sections content: optional */
+    for (list_t *head = bin->shdr; head; head = head->next) {
+      if (head->content) {
+        lseek(fd, get_shdr64_ent(head->content)->sh_offset, SEEK_SET);
+        write(fd, get_shdr64_mem(head->content),
+              get_shdr64_ent(head->content)->sh_size);
+      }
+    }
+    /* Copy phdr content */
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
         lseek(fd, get_phdr64_ent(head->content)->p_offset, SEEK_SET);
         write(fd, get_phdr64_mem(head->content), get_phdr64_ent(head->content)->p_filesz);
       }
     }
-    //for (list_t *head = bin->shdr; head; head = head->next) {
-    //  if (head->content) {
-    //    lseek(fd, ((shdr64_t *)head->content)->shdr->sh_offset, SEEK_SET);
-    //    write(fd, ((shdr64_t *)head->content)->mem,
-    //          ((shdr64_t *)head->content)->shdr->sh_size);
-    //  }
-    //}
-    //lseek(fd, get_ehdr64(bin)->e_shoff, SEEK_SET);
-    //for (list_t *head = bin->shdr; head; head = head->next) {
-    //  if (head->content) {
-    //    write(fd, ((shdr64_t *)head->content)->shdr, get_ehdr64(bin)->e_shentsize);
-    //  }
-    //}
   }
 }
 void elftool_write32(elftool_t *bin, int fd) {
@@ -42,26 +47,28 @@ void elftool_write32(elftool_t *bin, int fd) {
         write(fd, get_phdr32_ent(head->content), get_ehdr32(bin)->e_phentsize);
       }
     }
+    /* Copy section table: optional */
+    lseek(fd, get_ehdr32(bin)->e_shoff, SEEK_SET);
+    for (list_t *head = bin->shdr; head; head = head->next) {
+      if (head->content) {
+        write(fd, get_shdr32_ent(head->content), get_ehdr32(bin)->e_shentsize);
+      }
+    }
+    /* Copy sections content: optional */
+    for (list_t *head = bin->shdr; head; head = head->next) {
+      if (head->content) {
+        lseek(fd, get_shdr32_ent(head->content)->sh_offset, SEEK_SET);
+        write(fd, get_shdr32_mem(head->content),
+              get_shdr32_ent(head->content)->sh_size);
+      }
+    }
+    /* Copy phdr content */
     for (list_t *head = bin->phdr; head; head = head->next) {
       if (head->content) {
         lseek(fd, get_phdr32_ent(head->content)->p_offset, SEEK_SET);
         write(fd, get_phdr32_mem(head->content), get_phdr32_ent(head->content)->p_filesz);
       }
     }
-    // for (list_t *head = bin->shdr; head; head = head->next) {
-    //   if (head->content) {
-    //     lseek(fd, ((shdr32_t *)head->content)->shdr->sh_offset, SEEK_SET);
-    //     write(fd, ((shdr32_t *)head->content)->mem,
-    //           ((shdr32_t *)head->content)->shdr->sh_size);
-    //   }
-    // }
-    // lseek(fd, bin->ehdr32->e_shoff, SEEK_SET);
-    // for (list_t *head = bin->shdr; head; head = head->next) {
-    //   if (head->content) {
-    //     write(fd, ((shdr32_t *)head->content)->shdr, bin->ehdr32->e_shentsize);
-    //   }
-    // }
-  }
 }
 
 int elftool_write(elftool_t *bin, char *file_out) {
@@ -75,6 +82,14 @@ int elftool_write(elftool_t *bin, char *file_out) {
     if (fd < 0) {
       r = -1;
     } else {
+      void *buf = malloc(bin->length);
+      if (!buf) {
+          close(fd);
+          return ENOMEM;
+      }
+      memset(buf, 0, bin->length);
+      write(fd, buf, bin->length);
+      free(buf);
       if (bin->elfclass == ELFCLASS32) {
         elftool_write32(bin, fd);
       } else {
