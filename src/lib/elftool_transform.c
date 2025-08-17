@@ -2,159 +2,6 @@
 #include "elftool.h"
 #include <string.h>
 
-// TODO LMA: should create a new PT_LOAD with section injection.
-
-int elftool_transform(elftool_t *bin, elftool_transform_t *transform) {
-  int r = 0;
-
-  if (!bin || !transform) {
-    r = -1;
-  } else {
-    if (transform->type == NM_CODECAVE_INJECT) {
-      r = elftool_transform_codecave_injection(bin, transform);
-    } else if (transform->type == NM_SILVIO_INJECT) {
-      r = elftool_transform_silvio_injection(bin, transform);
-    } else {
-      r = elftool_transform_section_injection(bin, transform);
-    }
-  }
-  return (r);
-}
-
-int elftool_transform_codecave_injection(elftool_t *bin,
-                                        elftool_transform_t *transform) {
-  int r = 0;
-
-  if (!bin || !transform) {
-    r = -1;
-  } else {
-    r = 0;
-  }
-  return (r);
-}
-
-// int inject_shdr64(elftool_t *bin, elftool_transform_t *transform)
-// {
-//   int r = 0;
-//   uint64_t code_len_aligned = transform->code_len % 4096 == 0
-//                                   ? transform->code_len
-//                                   : ((transform->code_len / 4096 + 1) * 4096);
-//   phdr64_t *last_ptload = NULL;
-//   shdr64_t *last_shdr = NULL;
-//   shdr64_t new_shdr_entry = {0};
-//   Elf64_Shdr *new_shdr = NULL;
-// 
-//   fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//   /* Find last PT_LOAD */
-//   for (list_t *head = bin->phdr; head; head = head->next) {
-//     if (((phdr64_t *)head->content)->phdr->p_type == PT_LOAD &&
-//         (!last_ptload || last_ptload->phdr->p_vaddr <
-//                              ((phdr64_t *)head->content)->phdr->p_vaddr)) {
-//       last_ptload = (phdr64_t *)head->content;
-//     }
-//   }
-//   if (!last_ptload) {
-//     r = -1;
-//   } else {
-//     fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//     /* Find last section for this segment */
-//     for (list_t *head = bin->shdr; head; head = head->next) {
-//       if (((shdr64_t *)head->content)->shdr->sh_offset >
-//               last_ptload->phdr->p_offset &&
-//           ((shdr64_t *)head->content)->shdr->sh_offset <
-//               last_ptload->phdr->p_offset + last_ptload->phdr->p_filesz &&
-//           (!last_shdr || last_shdr->shdr->sh_offset <
-//                              ((shdr64_t *)head->content)->shdr->sh_offset)) {
-//         last_shdr = (shdr64_t *)head->content;
-//       }
-//     }
-//     if (!last_shdr) {
-//       r = -1;
-//     }
-//     if (r == 0) {
-//       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//       /* Build new shdr */
-//       new_shdr = malloc(bin->ehdr64->e_shentsize);
-//       if (!new_shdr) {
-//         r = -1;
-//       }
-//     }
-//     if (r == 0) {
-//       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//       memset(new_shdr, 0, bin->ehdr64->e_shentsize);
-//       new_shdr->sh_type = SHT_PROGBITS;
-//       new_shdr->sh_flags = SHF_EXECINSTR;
-//       new_shdr->sh_addr = last_shdr->shdr->sh_offset + last_shdr->shdr->sh_size;
-//       new_shdr->sh_offset =
-//           last_shdr->shdr->sh_offset + last_shdr->shdr->sh_size;
-//       new_shdr->sh_size = transform->code_len;
-//       new_shdr->sh_link = 0;
-//       new_shdr->sh_info = 0;
-//       new_shdr->sh_addralign = 8;
-//       new_shdr->sh_entsize = 0;
-//       new_shdr_entry.shdr = new_shdr;
-//       new_shdr_entry.mem = transform->code;
-//       new_shdr_entry.idx = last_shdr->idx + 1;
-//       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//       for (list_t *head = bin->shdr; head && r == 0; head = head->next) {
-//         /* Increase next idx */
-//         if (head->content &&
-//             ((shdr64_t *)head->content)->idx > last_shdr->idx) {
-//           ((shdr64_t *)head->content)->idx += 1;
-//         }
-//         /* Update offset */
-//         if (head->content && ((shdr64_t *)head->content)->shdr->sh_offset >
-//                                  new_shdr->sh_offset) {
-//           fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//           ((shdr64_t *)head->content)->shdr->sh_offset += code_len_aligned;
-//           ((shdr64_t *)head->content)->shdr->sh_addr += code_len_aligned;
-//         }
-//       }
-//       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//       /* Add the new section in the section list */
-//       for (list_t *head = bin->shdr; head && r == 0; head = head->next) {
-//         if (((shdr64_t *)head->content)->idx == last_shdr->idx) {
-//           list_t *new = ft_lstnew(&new_shdr_entry, sizeof(new_shdr_entry));
-//           if (!new) {
-//             r = -1;
-//           } else {
-//             new->next = head->next;
-//             head->next = new;
-//           }
-//         }
-//         if (((shdr64_t *)head->content)->shdr->sh_type == SHT_DYNSYM ||
-//             ((shdr64_t *)head->content)->shdr->sh_type == SHT_SYMTAB) {
-//           if (((shdr64_t *)head->content)->shdr->sh_link > new_shdr_entry.idx) {
-//             ((shdr64_t *)head->content)->shdr->sh_link += 1;
-//           }
-//         }
-//       }
-//     }
-//     if (r == 0) {
-//       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
-//       /* Update size and offset in phdr table */
-//       last_ptload->phdr->p_filesz += code_len_aligned;
-//       last_ptload->phdr->p_memsz += code_len_aligned;
-//       for (list_t *head = bin->phdr; head; head = head->next) {
-//         if (((phdr64_t *)head->content)->phdr->p_offset >
-//             last_ptload->phdr->p_offset +
-//                 (last_ptload->phdr->p_filesz - code_len_aligned)) {
-//           ((phdr64_t *)head->content)->phdr->p_offset += code_len_aligned;
-//           ((phdr64_t *)head->content)->phdr->p_vaddr += code_len_aligned;
-//         }
-//       }
-//     }
-//     if (r == 0) {
-//       if (bin->ehdr64->e_shstrndx >= new_shdr_entry.idx) {
-//         bin->ehdr64->e_shstrndx += 1;
-//       }
-//       bin->ehdr64->e_shnum += 1;
-//     }
-//   }
-//   return (r);
-// }
-
-
 /*
  * @brief extract info from last PT_LOAD
  *
@@ -183,6 +30,8 @@ int get_vaddr(elftool_t *bin, uint64_t *vaddr)
   }
   else {
       *vaddr = get_phdr64_ent(last_ptload)->p_offset + get_phdr64_ent(last_ptload)->p_memsz;
+      /* Align to 0x1000 */
+      *vaddr = ((((*vaddr) + (0x1000 - 1)) >> 12) << 12);
   }
   return (r);
 }
@@ -196,16 +45,36 @@ int elftool_append_code(elftool_t *bin, elftool_transform_t *transform)
 
     if (!bin || !transform)
         return EINVAL;
-    new_mem = malloc(bin->length + transform->code_len);
+    size_t offset = bin->length;
+    offset = ((((offset) + (0x1000 - 1)) >> 12) << 12);
+    new_mem = malloc(offset + transform->code_len);
     if (new_mem == NULL)
         return ENOMEM;
     memcpy(new_mem, bin->mem, bin->length);
-    memcpy(&new_mem[bin->length], transform->code, transform->code_len);
-    transform->code_file_offset = bin->length;
-    bin->length = bin->length + transform->code_len;
+    // offset aligned to page size (0x1000)
+    memcpy(&new_mem[offset], transform->code, transform->code_len);
+    printf("Append new data at offset %zu\n", offset);
+    transform->code_file_offset = offset;
+    bin->length = offset + transform->code_len;
     free(bin->mem);
     bin->mem = new_mem;
     return 0;
+}
+
+/* @brief Override first PT_NOTE phdr
+ * This allow us to add a new section without moving the whole phdr table.
+ * */
+int elftool_get_available_phdr_offset(elftool_t *bin, elftool_transform_t *transform)
+{
+    if (!bin || !transform)
+        return EINVAL;
+    for (list_t *head = bin->phdr; head; head = head->next) {
+        if (get_phdr64_ent(head->content)->p_type == PT_NOTE) {
+            transform->phdr_file_offset = ((phdr64_t*)head->content)->p_offset;
+            return 0;
+        }
+    }
+    return EINVAL;
 }
 
 /* @brief Add a new phdr
@@ -215,29 +84,27 @@ int elftool_append_code(elftool_t *bin, elftool_transform_t *transform)
 int elftool_add_phdr(elftool_t *bin, elftool_transform_t *transform)
 {
     uint8_t *new_mem;
-    Elf64_Ehdr *ehdr64 = NULL;
 
     if (!bin || !transform)
         return EINVAL;
-    ehdr64 = (Elf64_Ehdr*)bin->mem;
-    Elf64_Off phdr_table_size = ehdr64->e_phoff +
-        (((Elf64_Off)ehdr64->e_phnum) * (Elf64_Off)ehdr64->e_phentsize);
-    new_mem = malloc(bin->length + phdr_table_size + (Elf64_Off)ehdr64->e_phentsize);
+    Elf64_Off phdr_table_size = get_ehdr64(bin)->e_phoff +
+        (((Elf64_Off)get_ehdr64(bin)->e_phnum) * (Elf64_Off)get_ehdr64(bin)->e_phentsize);
+    new_mem = malloc(bin->length + phdr_table_size + (Elf64_Off)get_ehdr64(bin)->e_phentsize);
     if (new_mem == NULL)
         return ENOMEM;
     memcpy(new_mem, bin->mem, bin->length);
-    memcpy(&new_mem[bin->length], &bin->mem[ehdr64->e_phoff], phdr_table_size);
-    memset(&new_mem[bin->length + phdr_table_size], 0x42, sizeof(Elf64_Phdr));
-    ehdr64->e_phoff = bin->length; // Relocate program header offset
-    ehdr64->e_phnum += 1;
+    memcpy(&new_mem[bin->length], &bin->mem[get_ehdr64(bin)->e_phoff], phdr_table_size);
+    memset(&new_mem[bin->length + phdr_table_size], 0x0, sizeof(Elf64_Phdr));
     transform->phdr_file_offset = bin->length + phdr_table_size;
-    bin->length += phdr_table_size + (size_t)ehdr64->e_phentsize;
+    bin->length += phdr_table_size + (size_t)get_ehdr64(bin)->e_phentsize;
     free(bin->mem);
     bin->mem = new_mem;
+    get_ehdr64(bin)->e_phoff = bin->length; // Relocate program header offset
+    get_ehdr64(bin)->e_phnum += 1;
     return 0;
 }
 
-int elftool_transform_section_injection(elftool_t *bin,
+int elftool_transform_segment_injection(elftool_t *bin,
                                        elftool_transform_t *transform) {
   int r = 0;
   Elf64_Addr vaddr = 0;
@@ -251,10 +118,12 @@ int elftool_transform_section_injection(elftool_t *bin,
       fprintf(stderr, "%s:%d\n", __func__, __LINE__);
       r = elftool_append_code(bin, transform);
       if (r == 0) {
-        r = elftool_add_phdr(bin, transform);
+        r = elftool_get_available_phdr_offset(bin, transform);
+        // r = elftool_add_phdr(bin, transform);
       }
       if (r == 0) {
         r = get_vaddr(bin, &vaddr);
+        transform->virtual_addr = vaddr;
       }
       if (r == 0) {
           phdr64_t new_phdr = {
@@ -263,30 +132,18 @@ int elftool_transform_section_injection(elftool_t *bin,
               .mem_offset = transform->code_file_offset,
               .bin = bin,
           };
-          get_phdr64_ent(&new_phdr)->p_type = PT_LOAD;			/* Segment type */
-          get_phdr64_ent(&new_phdr)->p_flags = PF_R | PF_W;		/* Segment flags */
-          get_phdr64_ent(&new_phdr)->p_offset = transform->code_file_offset;		/* Segment file offset */
-          get_phdr64_ent(&new_phdr)->p_vaddr = vaddr;		/* Segment virtual address */
-          get_phdr64_ent(&new_phdr)->p_paddr = 0;		/* Segment physical address */
-          get_phdr64_ent(&new_phdr)->p_filesz = transform->code_len;		/* Segment size in file */
-          get_phdr64_ent(&new_phdr)->p_memsz = transform->code_len;		/* Segment size in memory */
-          get_phdr64_ent(&new_phdr)->p_align = 0x1000;		/* Segment alignment */
+          get_phdr64_ent(&new_phdr)->p_type = PT_LOAD;
+          get_phdr64_ent(&new_phdr)->p_flags = PF_R | PF_W;
+          get_phdr64_ent(&new_phdr)->p_offset = transform->code_file_offset;
+          get_phdr64_ent(&new_phdr)->p_vaddr = vaddr;
+          get_phdr64_ent(&new_phdr)->p_paddr = 0;
+          get_phdr64_ent(&new_phdr)->p_filesz = transform->code_len;
+          get_phdr64_ent(&new_phdr)->p_memsz = transform->code_len;
+          get_phdr64_ent(&new_phdr)->p_align = 0x1000;
           list_t *new = ft_lstnew(&new_phdr, sizeof(new_phdr));
           ft_lstpush(&bin->phdr, new);
       }
     }
-  }
-  return (r);
-}
-
-int elftool_transform_silvio_injection(elftool_t *bin,
-                                      elftool_transform_t *transform) {
-  int r = 0;
-
-  if (!bin || !transform) {
-    r = -1;
-  } else {
-    r = 0;
   }
   return (r);
 }
