@@ -43,6 +43,7 @@ SRC := 											\
 	src/client/elftool.c						\
 
 LIBSRC :=										\
+	src/lib/elftool_query.c							\
 	src/lib/elftool_load.c							\
 	src/lib/elftool_dump.c							\
 	src/lib/elftool_getopt.c						\
