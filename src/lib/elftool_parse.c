@@ -1,4 +1,5 @@
 #include "elftool.h"
+#include <string.h>
 
 static int elftool_parse64_ehdr(elftool_t *bin) {
   int r = 0;
@@ -8,6 +9,7 @@ static int elftool_parse64_ehdr(elftool_t *bin) {
   }
   if (r == 0) {
     if (get_ehdr64(bin)->e_shoff > bin->length) {
+        fprintf(stderr, "bin->length=%zu e_shoff=%lu\n", bin->length, get_ehdr64(bin)->e_shoff);
       _error(r, "e_shoff outside the scope");
     }
   }
@@ -327,6 +329,10 @@ int elftool_parse_syms64(elftool_t *bin, void *symtab) {
         if (r == 0 && sym_ent->st_name + get_shdr64_ent(syms.bin->strtab64)->sh_offset >
                           bin->length) {
           _error(r, "symbol name value out of scope");
+        } else {
+          syms.name = strdup(
+                 (char *)&bin->mem[get_shdr64_ent(bin->strtab64)->sh_offset + sym_ent->st_name]
+          );
         }
       }
       if (r == 0) {
@@ -376,6 +382,10 @@ int elftool_parse_syms32(elftool_t *bin, void *symtab) {
         if (r == 0 && sym_ent->st_name + get_shdr32_ent(syms.bin->strtab32)->sh_offset >
                           bin->length) {
           _error(r, "symbol name value out of scope");
+        } else {
+          syms.name = strdup(
+                 (char *)&bin->mem[get_shdr32_ent(bin->strtab32)->sh_offset + sym_ent->st_name]
+          );
         }
       }
       if (r == 0) {
