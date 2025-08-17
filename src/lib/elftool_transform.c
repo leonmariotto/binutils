@@ -29,7 +29,7 @@ int get_vaddr(elftool_t *bin, uint64_t *vaddr)
       r = -1;
   }
   else {
-      *vaddr = get_phdr64_ent(last_ptload)->p_offset + get_phdr64_ent(last_ptload)->p_memsz;
+      *vaddr = get_phdr64_ent(last_ptload)->p_vaddr + get_phdr64_ent(last_ptload)->p_memsz;
       /* Align to 0x1000 */
       *vaddr = ((((*vaddr) + (0x1000 - 1)) >> 12) << 12);
   }
@@ -115,7 +115,6 @@ int elftool_transform_segment_injection(elftool_t *bin,
     if (bin->elfclass == ELFCLASS32) {
       r = ENOSYS;
     } else {
-      fprintf(stderr, "%s:%d\n", __func__, __LINE__);
       r = elftool_append_code(bin, transform);
       if (r == 0) {
         r = elftool_get_available_phdr_offset(bin, transform);

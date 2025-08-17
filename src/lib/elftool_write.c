@@ -69,6 +69,7 @@ void elftool_write32(elftool_t *bin, int fd) {
         write(fd, get_phdr32_mem(head->content), get_phdr32_ent(head->content)->p_filesz);
       }
     }
+  }
 }
 
 int elftool_write(elftool_t *bin, char *file_out) {

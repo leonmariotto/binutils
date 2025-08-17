@@ -30,7 +30,7 @@ static void test_elftool_parse64_ehdr(void **state) {
   assert_true(r == 0);
   assert_true(bin.elfclass == ELFCLASS64);
   assert_true(bin.endian == ELFDATA2LSB);
-  assert_ptr_equal(bin.ehdr64, &hdr);
+  assert_ptr_equal(get_ehdr64(&bin), &hdr);
 }
 
 static void test_elftool_parse64_phdr(void **state) {
