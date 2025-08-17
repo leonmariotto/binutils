@@ -2,8 +2,8 @@
 UNIT_NAME = elftool_parse
 # Warning: Do not put "./" before path
 # Currently only support a single unit src in gcovr cmdline
-UNIT_SRC = src/$(UNIT_NAME).c
-UNIT_TEST_SRC = ./unit_test/test_$(UNIT_NAME).c
+UNIT_SRC = src/lib/$(UNIT_NAME).c
+UNIT_TEST_SRC = unit_test/test_$(UNIT_NAME).c
 UNIT_INC_PATH = ./inc ./liblst
 # Warning: input lib must be already compiled
 UNIT_LIB = liblst/liblst.a
@@ -28,7 +28,7 @@ SRC := \
 	$(CMOCKA_PATH)/src/cmocka.c
 
 ifneq (,$(findstring elftool_dump,$(UNIT_NAME)))
-SRC += src/elftool_parse.c
+SRC += src/lib/elftool_parse.c
 endif
 
 INCDIR := $(UNIT_INC_PATH) \
