@@ -6,3 +6,6 @@ site/*
 .cache/
 compile_commands.json
 unit_test_*
+
+elftool*
+libelftool.a
