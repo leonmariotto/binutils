@@ -1,8 +1,11 @@
 # binutils
 
-[![codecov](https://codecov.io/gh/leonmariotto/binutils/branch/main/graph/badge.svg)](https://codecov.io/gh/leonmariotto/binutils)
+This repository intend to collect tools for binary analysis.</br>
+Currently it contain a library (libelftool) that can be used to do elf64 parsing injection.</br>
+It also contain a command line tool similar to readelf.</br>
+See https://leonmariotto.github.io/binutils/
 
-## Whatsup
+## Submodules
 
 There is some submodule in there, so run:
 ```
@@ -10,29 +13,18 @@ git submodule update --init
 ```
 When cloning repository.
 
-There is some dependency :
-<ul>
-    <li>- uv</li>
-    <li>- cppcheck</li>
-    <li>- graphviz</li>
-    <li>- gcovr</li>
-</ul>
-
-This is mainly a reimplementation of nm in C, with some options readelf-like. </br>
-Work in progress for binary injection. </br>
-I use this repository to test some C developments tools and workflow. </br>
-
 ## Building
 
-Assembly, preprocessing, object code.
+There is some dependency:
+- uv
+- cppcheck
+- graphviz
+- gcovr
 
 ### Callgraphs
 
 The submodule gcc_graph_tool is used to produce a simple callgraph from gcc output.</br>
 This could be extended with stack usage for each function.</br>
-Screenshot of callgraph :
-<img width="1105" height="685" alt="Screenshot from 2025-07-27 19-53-32" src="https://github.com/user-attachments/assets/42a33d9f-7bdc-4522-a5c2-e08d34eaa711" />
-
 
 ## Static Analysis
 
@@ -52,4 +44,7 @@ Test is run with CMocka, it output a JUnit xml.</br>
 ```
 make -f unit_test.mk
 ```
-unit_test.mk is made to be controllable by caller script (TBD).
+unit_test.mk is made is controllable by caller script and generate a global coverture report.</br>
+This is enabled in CI.</br>
+The report is analyzed by codecov :
+[![codecov](https://codecov.io/gh/leonmariotto/binutils/branch/main/graph/badge.svg)](https://codecov.io/gh/leonmariotto/binutils)
