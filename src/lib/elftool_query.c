@@ -16,7 +16,7 @@ int elftool_sym_query_by_name(elftool_t *bin, elftool_sym_query_t *query, char *
         if (!strncmp(name, ((sym64_t*)head->content)->name, strlen(name))) {
             if (get_sym64_ent(head->content)->st_value != 0
                     && get_sym64_ent(head->content)->st_size != 0) {
-                printf("Found symbol [%s]\n", name);
+                // printf("Found symbol [%s]\n", name);
                 sym_size = get_sym64_ent(head->content)->st_size;
                 sym_addr = get_sym64_ent(head->content)->st_value;
                 for (list_t *head = bin->phdr; head; head = head->next) {
@@ -33,7 +33,7 @@ int elftool_sym_query_by_name(elftool_t *bin, elftool_sym_query_t *query, char *
                         }
                         Elf64_Addr symbol_content_offset = get_phdr64_ent(head->content)->p_offset +
                             offset_from_segment_start;
-                        printf("found pointer to symbol mem at %lu\n", symbol_content_offset);
+                        // printf("found pointer to symbol mem at %lu\n", symbol_content_offset);
                         sym_content = &bin->mem[symbol_content_offset];
                         found = true;
                         break;

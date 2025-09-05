@@ -53,7 +53,7 @@ int elftool_append_code(elftool_t *bin, elftool_transform_t *transform)
     memcpy(new_mem, bin->mem, bin->length);
     // offset aligned to page size (0x1000)
     memcpy(&new_mem[offset], transform->code, transform->code_len);
-    printf("Append new data at offset %zu\n", offset);
+    // printf("Append new data at offset %zu\n", offset);
     transform->code_file_offset = offset;
     bin->length = offset + transform->code_len;
     free(bin->mem);
